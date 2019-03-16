@@ -195,22 +195,30 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
  printf("Attendo i messaggi da seriale!\n");
+ int i = 0;
+ while(i == 0)
+	i =  HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin);
+
+ setup();
   while (1)
   {
 
   /* USER CODE END WHILE */
+	  /// il coefficiente tra gradi e %PWM è: 0.025/90 = 0.2778e-3
+	  /// l'offset (coefficeinte q) è 0.05
+	  /// quindi il valore PWM e' : 0.2778e-3 * gradi + 0.075
 	  // serve a far lampeggiare i led con cadenza 500 ms
 	  loop();
   /* imposta dei pwm di test sui 6 canali compatibili arduino */
-	  RC[0].delta = (uint32_t) RC[0].periodo *0.05;
-	  RC[1].delta = (uint32_t) RC[1].periodo *0.06;
-	  RC[2].delta = (uint32_t) RC[2].periodo *0.07;
-	  RC[3].delta = (uint32_t) RC[3].periodo *0.08;
-	  RC[4].delta = (uint32_t) RC[4].periodo *0.09;
-	  RC[5].delta = (uint32_t) RC[5].periodo *0.1;
-	  for (int i = 0; i < 6; i++)
-	  	 //! le strutture dati sono impostate e i PWM vengono avviati
-	  	 goRC(&RC[i]);
+//	  RC[0].delta = (uint32_t) RC[0].periodo *0.05;
+//	  RC[1].delta = (uint32_t) RC[1].periodo *0.06;
+//	  RC[2].delta = (uint32_t) RC[2].periodo *0.07;
+//	  RC[3].delta = (uint32_t) RC[3].periodo *0.08;
+//	  RC[4].delta = (uint32_t) RC[4].periodo *0.09;
+//	  RC[5].delta = (uint32_t) RC[5].periodo *0.1;
+
+
+
 
   }
   /* USER CODE END 3 */

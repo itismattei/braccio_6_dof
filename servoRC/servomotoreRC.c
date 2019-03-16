@@ -142,15 +142,15 @@ extern TIM_HandleTypeDef htim4;
   * @retval void
   */
 void initRC(servoRC * RCptr){
-	  setRC(&RC[0], &htim1, 1);
-	  setRC(&RC[1], &htim1, 2);
-	  setRC(&RC[2], &htim1, 3);
+	  setRC(&RC[3], &htim1, 1);  /// corrisponde al quarto connettore (M4) della scheda arancione
+	  setRC(&RC[4], &htim1, 2);  /// corrisponde al quinto connettore (M5) della scheda arancione
+	  setRC(&RC[5], &htim1, 3);  /// corrisponde al sesto connettore (M6) della scheda arancione
 	  // inizializza il motore posto su  TIM3  CH2 ( PA7)
 	  //setRC(&RC[3], &htim3, 1);
-	  setRC(&RC[3], &htim3, 2);
+	  setRC(&RC[0], &htim3, 2);  /// corrisponde al primo connettore (M1) della scheda arancione
 	  // inizializza i motori posti su TIM4 CH3 e CH4 (PD14 e PD15)
-	  setRC(&RC[4], &htim4, 3);
-	  setRC(&RC[5], &htim4, 4);
+	  setRC(&RC[1], &htim4, 3);  /// corrisponde al secondo connettore (M2) della scheda arancione
+	  setRC(&RC[2], &htim4, 4);  /// corrisponde al terzo connettore (M3) della scheda arancione
 }
 
 /**
