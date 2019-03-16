@@ -32,6 +32,8 @@
 /* External variables --------------------------------------------------------*/
 extern TIM_HandleTypeDef htim5;
 extern UART_HandleTypeDef huart3;
+extern DMA_HandleTypeDef hdma_adc3;
+extern ADC_HandleTypeDef hadc3;
 
 /******************************************************************************/
 /*            Cortex-M7 Processor Interruption and Exception Handlers         */ 
@@ -248,9 +250,34 @@ void USART3_IRQHandler(void)
   //! HAL_UART_Init(&huart3) richiama HAL_UART_MspInit(UART_HandleTypeDef* huart) che imposta tutto
   //! lo hardware (direzione dei pin, funzione alternativa, clock e imposta la priorita' dell'interrupt
 
+}
 
+/**
+* @brief This function handles ADC1, ADC2 and ADC3 global interrupts.
+*/
+void ADC_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC_IRQn 0 */
 
+  /* USER CODE END ADC_IRQn 0 */
+  HAL_ADC_IRQHandler(&hadc3);
+  /* USER CODE BEGIN ADC_IRQn 1 */
 
+  /* USER CODE END ADC_IRQn 1 */
+}
+
+/**
+* @brief This function handles DMA2 stream0 global interrupt.
+*/
+void DMA2_Stream0_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
+
+  /* USER CODE END DMA2_Stream0_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_adc3);
+  /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream0_IRQn 1 */
 }
 /* USER CODE BEGIN 1 */
 
