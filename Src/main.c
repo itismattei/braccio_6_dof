@@ -82,12 +82,15 @@ UART_HandleTypeDef huart6;
 #define  DIMBUFF  		64
 char READ_BUFF[DIMBUFF];
 volatile uint8_t WPTR = 0, RPTR = 0;
+uint32_t adc[6], buffer[6], temperature;  // define variables
+float vsense = 3.3/1023;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART3_UART_Init(void);
 /*static*/ void MX_TIM3_Init(void);
 /*static*/ void MX_TIM4_Init(void);
@@ -105,6 +108,7 @@ static void MX_TIM5_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void loop(void);
+void setup(void);
                                 
 ///vettore che raccoglie le informazioni sui delta e numero dei servi RC
 /// la dimensione e' 6 ed e' definito in servomotoreRC.c
@@ -152,6 +156,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART3_UART_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
@@ -194,32 +199,21 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
- printf("Attendo i messaggi da seriale!\n");
- int i = 0;
- while(i == 0)
-	i =  HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin);
+ printf("Sblocca il dispositivo premendo il tasto blu!\n");
+ while(HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin) == GPIO_PIN_RESET);
 
+ printf("Sbloccato.\nAttendo i messaggi da seriale!\n");
+
+ /// settaggio
  setup();
-  while (1)
-  {
 
-  /* USER CODE END WHILE */
-	  /// il coefficiente tra gradi e %PWM è: 0.025/90 = 0.2778e-3
-	  /// l'offset (coefficeinte q) è 0.05
-	  /// quindi il valore PWM e' : 0.2778e-3 * gradi + 0.075
-	  // serve a far lampeggiare i led con cadenza 500 ms
+ while (1){
+	 /// simile ad Arduino
+ /* USER CODE END WHILE */
+	  HAL_ADC_Start_DMA(&hadc3, buffer, 6);
+  /* USER CODE BEGIN 3 */
+  HAL_Delay (1000);
 	  loop();
-  /* imposta dei pwm di test sui 6 canali compatibili arduino */
-//	  RC[0].delta = (uint32_t) RC[0].periodo *0.05;
-//	  RC[1].delta = (uint32_t) RC[1].periodo *0.06;
-//	  RC[2].delta = (uint32_t) RC[2].periodo *0.07;
-//	  RC[3].delta = (uint32_t) RC[3].periodo *0.08;
-//	  RC[4].delta = (uint32_t) RC[4].periodo *0.09;
-//	  RC[5].delta = (uint32_t) RC[5].periodo *0.1;
-
-
-
-
   }
   /* USER CODE END 3 */
 
@@ -237,15 +231,15 @@ static void MX_ADC3_Init(void)
   hadc3.Instance = ADC3;
   hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc3.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc3.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc3.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc3.Init.ContinuousConvMode = DISABLE;
   hadc3.Init.DiscontinuousConvMode = DISABLE;
   hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc3.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc3.Init.NbrOfConversion = 1;
-  hadc3.Init.DMAContinuousRequests = DISABLE;
-  hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc3.Init.NbrOfConversion = 6;
+  hadc3.Init.DMAContinuousRequests = ENABLE;
+  hadc3.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   if (HAL_ADC_Init(&hadc3) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
@@ -253,15 +247,59 @@ static void MX_ADC3_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_9;
+  sConfig.Channel = ADC_CHANNEL_3;	/// PA3 -> A0 -> ADC_CH3
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
 
+  sConfig.Channel = ADC_CHANNEL_10;	/// PC0 -> A1 -> ADC_CH10
+  sConfig.Rank = ADC_REGULAR_RANK_2;
+  //sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sConfig.Channel = ADC_CHANNEL_13;	/// PC3 -> A2 -> ADC_CH13
+  sConfig.Rank = ADC_REGULAR_RANK_3;
+  //sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+sConfig.Channel = ADC_CHANNEL_9;  /// PF3 -> A3 -> ADC_CH9
+sConfig.Rank = ADC_REGULAR_RANK_4;
+if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK){
+  _Error_Handler(__FILE__, __LINE__);
 }
+
+/**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+*/
+sConfig.Channel = ADC_CHANNEL_15;  /// PF5 -> A4 -> ADC_CH15
+sConfig.Rank = ADC_REGULAR_RANK_5;
+if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK){
+	_Error_Handler(__FILE__, __LINE__);
+}
+
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+    */
+  sConfig.Channel = ADC_CHANNEL_8;   /// PF10 -> A5 -> ADC_CH8
+  sConfig.Rank = ADC_REGULAR_RANK_6;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+
+
+}
+
 
 
 /* SPI1 init function */
@@ -272,11 +310,11 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_4BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -551,6 +589,30 @@ void assert_failed(uint8_t* file, uint32_t line)
 /**
   * @}
   */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	for (int i = 0; i < 6; i++)
+	{
+	   adc[i] = buffer[i];  // store the values in adc[]
+	}
+
+        temperature = (((adc[2]*vsense)-.76)/.0025)+25;
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+
+}
 
 /**
   * @}

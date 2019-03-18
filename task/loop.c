@@ -29,7 +29,9 @@ void loop(void){
 }
 
 
-
+///
+/// imposta i motori in posizione centrale
+/// il braccio e' verticale
 void setup(){
 	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
 	  RC[0].delta = (uint32_t) RC[0].periodo *0.075;
