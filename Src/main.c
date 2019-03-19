@@ -36,6 +36,8 @@
   *
   * 20/02/19: impostata la uart3 ad interruzione in ricezione e verificato il funzionamento
   *
+  * 19/03/19: verificato il funzionamento dei convertitori AD compatibili arduino
+  *
   * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
   * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
