@@ -21,11 +21,14 @@ void loop(void){
 		  TICK = 0;
 	  }
 
-	  RC[3].delta = (uint32_t) RC[3].periodo *0.05;
-	  goRC(&RC[3]);
-	  RC[5].delta = (uint32_t) RC[5].periodo *0.05;
-	  goRC(&RC[5]);
-
+	  //RC[3].delta = (uint32_t) RC[3].periodo *0.05;
+	  //goRC(&RC[3]);
+	  //RC[5].delta = (uint32_t) RC[5].periodo *0.05;
+	  //goRC(&RC[5]);
+	  //RC[0].delta = (uint32_t) RC[0].periodo *0.075;
+	  //goRC(&RC[0]);
+	  RC[2].delta = (uint32_t) RC[2].periodo *0.075;
+	  goRC(&RC[2]);
 }
 
 

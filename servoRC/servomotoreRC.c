@@ -170,8 +170,8 @@ void goRC(servoRC * RCptr){
 	uint32_t periodo = RCptr->periodo;
 	int inf, sup, delta;
 	delta = RCptr->delta;
-	inf = (int) (periodo * 0.049);
-	sup = (int) (periodo * 0.101);
+	inf = (int) (periodo * 0.040);	///fuori standard servo RC
+	sup = (int) (periodo * 0.150);
 	if (delta < inf || delta > sup){
 		//! esterno all'intervallo di controllo del servoRC
 		printf("PWM esterno all'intervallo 5%% - 10%%\n");
