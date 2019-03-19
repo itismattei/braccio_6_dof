@@ -6,11 +6,14 @@
  */
 
 #include "stm32f7xx_hal.h"
+#include <stdbool.h>
 #include "servomotoreRC.h"
 
 extern volatile uint32_t TICK, MS100, S1;
 extern servoRC RC[];
-
+extern uint32_t buffer[];
+extern bool ADupdate;
+extern ADC_HandleTypeDef hadc3;
 #define		TIC500		50
 
 void loop(void){
@@ -29,6 +32,11 @@ void loop(void){
 	  //goRC(&RC[0]);
 	  RC[2].delta = (uint32_t) RC[2].periodo *0.075;
 	  goRC(&RC[2]);
+	  /// verifica se occorre aggiornare le letture dei convertitori
+	  if (ADupdate == false)
+		  /// aggiorna ogni volta che il dato e' usato, la lettura dei convertitori AD
+		  /// La funzione callback riporta ADupdate a true
+		  HAL_ADC_Start_DMA(&hadc3, buffer, 6);
 }
 
 

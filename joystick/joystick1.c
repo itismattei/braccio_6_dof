@@ -3,7 +3,17 @@
  *
  *  Created on: 19 mar 2019
  *      Author: s_rvrndr02a27g479k
+ *
+ *	/// il funzionamento potrebbe essere questo:
+ *	il joystick di sinistra, potenziometro orizzontale ruota la spalla; il potenziometro verticale ruota il
+ *	braccio
+ *	il joystick di destra , potenziometro orizzontale ruota l'avambraccio; il potenziometro verticale inclina
+ *	il polso
+ *	premendo il joystick di destra, il potenziometro orizzonatale ruota il polso e quello verticale apre la
+ *	pinza.
  */
+
+
 #include "math.h"
 #include <stdbool.h>
 #include "main.h"
@@ -12,7 +22,8 @@
 #include "joystick.h"
 
 
-void joystickINIT ( joystick *newJoy, uint8_t valueX, uint8_t valueY, uint8_t valueSw, int zeroX, int zeroY ){
+void joystickINIT ( joystick *newJoy, uint8_t valueX, uint8_t valueY,
+		uint8_t valueSw, int zeroX, int zeroY, uint16_t ch ){
   newJoy->pinVRx = valueX;
   newJoy->pinVRy = valueY;
   newJoy->pinSW= valueSw;
@@ -21,6 +32,8 @@ void joystickINIT ( joystick *newJoy, uint8_t valueX, uint8_t valueY, uint8_t va
 //  pinMode( newJoy->pinVRx, INPUT);
 //  pinMode( newJoy->pinVRy, INPUT);
 //  pinMode( newJoy->pinSw,INPUT_PULLUP);
+  /// associa la struttura al numero del potenziometro
+  newJoy->numPot = ch;
 };
 
 bool push ( joystick *newJoy ){
@@ -32,15 +45,60 @@ bool push ( joystick *newJoy ){
   return state;
 };
 
+///
+/// legge il valore del convertitore AD su cui e' posto il potenziometro e ne trova l'angolo rispetto
+/// alla posizione di riposo. Nella posizione di riposo la lettura dell'A/D dovrebbe essere
+/// 2047
+
+extern ADC_HandleTypeDef hadc3;
+extern bool ADupdate;
+
 int getDegree( joystick *newJoy ){
-  int valVRX  = 0; ///HAL_GPIO_ReadPin(newJoy->pinVRx)-newJoy->zeroX;
-  int valVRY  = 0; ///HAL_GPIO_ReadPin(newJoy->pinVRy)-newJoy->zeroY;
-  int radiant = atan(valVRX/valVRY);
-  int degree  = (radiant*180)/ M_PI;
-  if(newJoy->pinVRx<0 && newJoy->pinVRy>0) degree=degree+180;//si trova nel secondo quadrante
-  if(newJoy->pinVRx<0 && newJoy->pinVRy<0) degree=degree+180;//si trova nel terzo quadrante
-  if(newJoy->pinVRx>0 && newJoy->pinVRy<0) degree=degree+360;//si trova nel quarto quadrante
-  return degree;
+	int valVRX;
+	if (ADupdate == true){
+		ADupdate = false;
+		switch(newJoy->numPot){
+		case 0:
+
+		break;
+
+		case 1:
+			valVRX = buffer[1] - 2047; ///HAL_GPIO_ReadPin(newJoy->pinVRx)-newJoy->zeroX;
+		break;
+
+		case 2:
+
+		break;
+
+		case 3:
+
+		break;
+
+
+		case 4:
+
+		break;
+
+		case 5:
+
+		break;
+		}
+
+		int valVRY  = 0; ///HAL_GPIO_ReadPin(newJoy->pinVRy)-newJoy->zeroY;
+		int radiant;
+		if (valVRY != 0)
+		  radiant = atan(valVRX/valVRY);
+
+
+		int degree  = (int) (radiant * 180.0)/ M_PI;
+
+		if(newJoy->pinVRx<0 && newJoy->pinVRy>0) degree=degree+180;//si trova nel secondo quadrante
+		if(newJoy->pinVRx<0 && newJoy->pinVRy<0) degree=degree+180;//si trova nel terzo quadrante
+		if(newJoy->pinVRx>0 && newJoy->pinVRy<0) degree=degree+360;//si trova nel quarto quadrante
+		return degree;
+	}
+	else
+		return -10000;
 };
 
 verse getVerseX ( joystick * newJoy ){
