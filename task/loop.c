@@ -21,14 +21,19 @@ void loop(void){
 		  TICK = 0;
 	  }
 
-	  //RC[3].delta = (uint32_t) RC[3].periodo *0.05;
-	  //goRC(&RC[3]);
-	  //RC[5].delta = (uint32_t) RC[5].periodo *0.05;
-	  //goRC(&RC[5]);
-	  //RC[0].delta = (uint32_t) RC[0].periodo *0.075;
-	  //goRC(&RC[0]);
-	  RC[2].delta = (uint32_t) RC[2].periodo *0.075;
-	  goRC(&RC[2]);
+	  for(float i = 0; i<0.140; i=i+0.005){
+		  RC[5].delta = (uint32_t) RC[5].periodo *i;
+		  goRC(&RC[5]);
+		  HAL_Delay (1000);
+	  }
+	  /*
+	  RC[4].delta = (uint32_t) RC[4].periodo *0.080;
+	  goRC(&RC[4]);
+	  RC[5].delta = (uint32_t) RC[5].periodo *0.030;
+	  goRC(&RC[5]);
+	  RC[0].delta = (uint32_t) RC[0].periodo *0.00;
+	  goRC(&RC[0]);*/
+
 }
 
 

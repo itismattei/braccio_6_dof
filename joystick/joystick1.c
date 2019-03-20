@@ -25,7 +25,7 @@ void joystickINIT ( joystick *newJoy, uint8_t valueX, uint8_t valueY, uint8_t va
 
 bool push ( joystick *newJoy ){
   bool state;
-  if(HAL_GPIO_ReadPin(GPIOC, newJoy->pinSW )== GPIO_PIN_SET)
+  if(HAL_GPIO_ReadPin(GPIOC, newJoy->pinSW )== GPIO_PIN_SET)//LOGICA NEGATA
     state = false;
   else
     state = true;
