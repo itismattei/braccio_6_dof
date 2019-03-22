@@ -24,12 +24,21 @@
 //	bool valid;
 //	static int numMot;
 //};
+typedef enum{
+	base,
+	spalla,
+	gomito,
+	mano,
+	polso,
+	pinza
+} tipoMotore;
 
 typedef struct _servoRc{
 	uint16_t 			numCHRc;		/// contiene il numero del canale del motore
 	uint16_t 			delta;			/// contiene il valore attuale del PWM
 	TIM_HandleTypeDef 	*TIM_PWM;		/// contiene l'indirizzo della struttura che ha i parametri del PWM
 	uint32_t			periodo;
+	tipoMotore			motore;
 } servoRC;
 
 
@@ -39,7 +48,7 @@ typedef struct _servoRc{
   * @param  da impostare, elemento del vettore dei dati del servo da impostare.
   * @retval void
   */
-void setRC(servoRC * RCptr, TIM_HandleTypeDef *datiPWM, int numCH);
+void setRC(servoRC * RCptr, TIM_HandleTypeDef *datiPWM, int numCH, tipoMotore *tipo);
 void initRC(servoRC * RCptr);
 void goRC(servoRC * RCptr);
 

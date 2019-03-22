@@ -88,6 +88,7 @@ volatile uint8_t WPTR = 0, RPTR = 0;
 uint32_t adc[6], buffer[6], temperature;  // define variables
 float vsense = 3.3/1023;
 bool ADupdate = false;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

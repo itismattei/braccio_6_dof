@@ -84,7 +84,7 @@ servoRC RC[6] = {0};
   * @param  puntatore alle struttura del timer che fornisce le uscite PWM.
   * @retval void
   */
-void setRC(servoRC * RCptr, TIM_HandleTypeDef *datiPWM, int numCH){
+void setRC(servoRC * RCptr, TIM_HandleTypeDef *datiPWM, int numCH, tipoMotore *tipo){
 	/// controllo di validita' del dato ricevuto
 	if (datiPWM == NULL){
 		RCptr->TIM_PWM = NULL;
@@ -142,15 +142,15 @@ extern TIM_HandleTypeDef htim4;
   * @retval void
   */
 void initRC(servoRC * RCptr){
-	  setRC(&RC[3], &htim1, 1);  /// corrisponde al quarto connettore (M4) della scheda arancione
-	  setRC(&RC[4], &htim1, 2);  /// corrisponde al quinto connettore (M5) della scheda arancione
-	  setRC(&RC[5], &htim1, 3);  /// corrisponde al sesto connettore (M6) della scheda arancione
+	  setRC(&RC[3], &htim1, 1, mano);  /// corrisponde al quarto connettore (M4) della scheda arancione
+	  setRC(&RC[4], &htim1, 2, polso);  /// corrisponde al quinto connettore (M5) della scheda arancione
+	  setRC(&RC[5], &htim1, 3, pinza);  /// corrisponde al sesto connettore (M6) della scheda arancione
 	  // inizializza il motore posto su  TIM3  CH2 ( PA7)
 	  //setRC(&RC[3], &htim3, 1);
-	  setRC(&RC[0], &htim3, 2);  /// corrisponde al primo connettore (M1) della scheda arancione
+	  setRC(&RC[0], &htim3, 2, base);  /// corrisponde al primo connettore (M1) della scheda arancione
 	  // inizializza i motori posti su TIM4 CH3 e CH4 (PD14 e PD15)
-	  setRC(&RC[1], &htim4, 3);  /// corrisponde al secondo connettore (M2) della scheda arancione
-	  setRC(&RC[2], &htim4, 4);  /// corrisponde al terzo connettore (M3) della scheda arancione
+	  setRC(&RC[1], &htim4, 3, gomito);  /// corrisponde al secondo connettore (M2) della scheda arancione
+	  setRC(&RC[2], &htim4, 4, spalla);  /// corrisponde al terzo connettore (M3) della scheda arancione
 }
 
 /**
@@ -169,9 +169,45 @@ void goRC(servoRC * RCptr){
 	//! controlla delta nell'intervallo 5% - 10%
 	uint32_t periodo = RCptr->periodo;
 	int inf, sup, delta;
-	delta = RCptr->delta;
-	inf = (int) (periodo * 0.040);	///fuori standard servo RC
-	sup = (int) (periodo * 0.150);
+	switch(RCptr->motore){
+			case base:
+				delta = RCptr->delta;
+				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				sup = (int) (periodo * 0.130);
+			break;
+
+			case gomito:
+				delta = RCptr->delta;
+				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				sup = (int) (periodo * 0.127);
+			break;
+
+			case spalla:
+				delta = RCptr->delta;
+				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				sup = (int) (periodo * 0.110);
+			break;
+
+			case mano:
+				delta = RCptr->delta;
+				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				sup = (int) (periodo * 0.128);
+			break;
+
+			case polso:
+				delta = RCptr->delta;
+				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				sup = (int) (periodo * 0.1245);
+			break;
+
+			case pinza:
+				delta = RCptr->delta;
+				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				sup = (int) (periodo * 0.073);
+			break;
+
+	}
+
 	if (delta < inf || delta > sup){
 		//! esterno all'intervallo di controllo del servoRC
 		printf("PWM esterno all'intervallo 5%% - 10%%\n");

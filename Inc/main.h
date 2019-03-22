@@ -72,6 +72,12 @@
 #define LD2_Pin GPIO_PIN_7
 #define LD2_GPIO_Port GPIOB
 #define	LD1_Pin 	GPIO_PIN_0
+/*#define JY1_X_Pin	GPIO_PIN_ //joystick 1 : potenziomentro x
+#define JY1_Y_Pin	GPIO_PIN_ //joystick 1 : potenziomentro y
+#define JY1_SW_Pin	GPIO_PIN_ //joystick 1 : pulsante
+#define JY2_X_Pin	GPIO_PIN_//joystick 2 : potenziomentro x
+#define JY2_Y_Pin	GPIO_PIN_//joystick 2 : potenziomentro y
+#define JY2_SW_Pin	GPIO_PIN_//joystick 2 : pulsante*/
 
 /* ########################## Assert Selection ############################## */
 /**
