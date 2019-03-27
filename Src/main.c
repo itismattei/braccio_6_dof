@@ -217,7 +217,7 @@ int main(void)
  /* USER CODE END WHILE */
 	  HAL_ADC_Start_DMA(&hadc3, buffer, 6);
   /* USER CODE BEGIN 3 */
-  HAL_Delay (1000);
+  //HAL_Delay (1000);
 	  loop();
   }
   /* USER CODE END 3 */

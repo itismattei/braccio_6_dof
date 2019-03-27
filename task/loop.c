@@ -23,8 +23,29 @@ volatile int JY2_X;
 volatile int JY2_Y;
 volatile int JY2_SW;
 
-volatile bool state1 = false;
+volatile bool state1 = true;
 volatile bool state2 = false;
+
+volatile bool statoJ1_precedente = false;
+volatile bool statoJ2_precedente = true;
+volatile int stato;
+
+#define min 0.040
+
+volatile float PWM_base = 0.075;
+volatile float PWM_spalla = 0.075;
+volatile float PWM_gomito = 0.075;
+volatile float PWM_polso = 0.075;
+volatile float PWM_mano = 0.075;
+volatile float PWM_pinza = 0.075;
+
+volatile float MAX_base = 0.130;
+volatile float MAX_spalla = 0.110;
+volatile float MAX_gomito = 0.127;
+volatile float MAX_polso = 0.1245;
+volatile float MAX_mano = 0.128;
+volatile float MAX_pinza = 0.073;
+
 
 void loop(void){
 
@@ -34,17 +55,16 @@ void loop(void){
 		  TICK = 0;
 	  }
 
-	  //RC[3].delta = (uint32_t) RC[3].periodo *0.05;
-	  //goRC(&RC[3]);
-	  //RC[5].delta = (uint32_t) RC[5].periodo *0.05;
-	  //goRC(&RC[5]);
-	  //RC[0].delta = (uint32_t) RC[0].periodo *0.075;
-	  //goRC(&RC[0]);
-	 /* for(float i=0; i < 0.140; i=i+0.001){
-		  RC[5].delta = (uint32_t) RC[5].periodo *i;
-		 goRC(&RC[5]);
+	  // verifica se occorre aggiornare le letture dei convertitori
+	  if (ADupdate == false)
+	  /// aggiorna ogni volta che il dato e' usato, la lettura dei convertitori AD
+	  /// La funzione callback riporta ADupdate a true
+	  HAL_ADC_Start_DMA(&hadc3, buffer, 6);
+	  /*for(float i=0; i < 0.140; i=i+0.001){
+		  RC[1].delta = (uint32_t) RC[1].periodo *i;
+		 goRC(&RC[1]);
 		 HAL_Delay(1000);
-		 printf("%d\n", RC[5].delta);
+		 printf("%d\n", RC[1].delta);
 	  }*/
 	  JY1_X = buffer[0]; //base
 	  JY1_Y = buffer[1]; //spalla
@@ -52,36 +72,83 @@ void loop(void){
 	  JY2_X = buffer[3]; //mano //gomito
 	  JY2_Y = buffer[4]; //polso //pinza
 	  JY2_SW= buffer[5];
-	  volatile int base,spalla,mano,gomito,polso,pinza;
-	  if( JY1_SW > 4000 || JY2_SW < 4000 ){
+
+	  if( JY1_SW < 100  && JY2_SW > 200 ){
 		  state1 = true;
 		  state2 = false;
+		  stato = 1;
 	  }
-	  if( JY2_SW > 4000 || JY1_SW < 4000 ){
+	  if( JY2_SW < 100 && JY1_SW > 200 ){
 		  state2 = true;
 		  state1 = false;
+		  stato = 2;
 	  }
-	  if( state1 == true ){
-		  base=JY1_X*0.13/4096;//proporazione cinese che lega potenziometro e valori massimi di PWM
-		  spalla=JY1_Y*0.11/4096;
-		  gomito = JY2_X * 0.127/4096;
-		  mano = JY2_Y * 0.128/4096;
-	  }
+	  //printf("%d\n", (int)(PWM_base*1000.0));
+	  //HAL_Delay(500);
+	  if( state1 == true){
 
-	  if( state2 == true ){
+		  if( JY1_X > 3000 && PWM_base < MAX_base )
+		  	 PWM_base = PWM_base + 0.001;
 
-		  polso = JY2_X * 0.1245/4096;
-		  pinza = JY2_Y * 0.073/4096;
+		  if( JY1_X < 1500 && PWM_base > min )
+		  	 PWM_base = PWM_base - 0.001;
+
+		  if( JY1_Y > 3000 && PWM_spalla < min )
+			 PWM_spalla = PWM_spalla + 0.001;
+
+		  if( JY1_Y < 1500 && PWM_spalla > MAX_spalla )
+			 PWM_spalla = PWM_spalla - 0.001;
+
+		  /*if( JY2_X > 3500 && PWM_gomito < MAX_gomito )
+			 PWM_gomito = PWM_gomito + 0.001;
+
+		  if( JY2_X < 1500 && PWM_gomito > min )
+			 PWM_gomito = PWM_gomito - 0.001;
+
+		  if( JY2_Y > 3500 && PWM_mano < min )
+			 PWM_mano = PWM_mano + 0.001;
+
+		  if( JY2_Y < 1500 && PWM_mano > MAX_mano )
+			 PWM_mano = PWM_mano - 0.001;*/
+
+		  HAL_Delay(20);
 	  }
-	  // verifica se occorre aggiornare le letture dei convertitori
-	  if (ADupdate == false)
-		  /// aggiorna ogni volta che il dato e' usato, la lettura dei convertitori AD
-		  /// La funzione callback riporta ADupdate a true
-		  HAL_ADC_Start_DMA(&hadc3, buffer, 6);
+	  /*if( state2 == true){
+
+		  if( JY2_X > 3500 && PWM_pinza < MAX_pinza )
+			 PWM_pinza = PWM_pinza + 0.001;
+
+		  if( JY2_X < 1500 && PWM_pinza > min )
+			 PWM_pinza = PWM_pinza - 0.001;
+
+		  if( JY2_Y > 3500 && PWM_polso < min )
+			 PWM_polso = PWM_polso + 0.001;
+
+		  if( JY2_Y < 1500 && PWM_polso > MAX_polso )
+			 PWM_polso = PWM_polso - 0.001;
+
+		  HAL_Delay(20);
+	  }*/
+
+	  //printf("%f\n", PWM_base);
+	  RC[0].delta = (uint32_t) RC[0].periodo * PWM_base;
+	  goRC(&RC[0]);
+	  RC[1].delta = (uint32_t) RC[1].periodo * PWM_gomito;
+	  goRC(&RC[1]);
+	  RC[2].delta = (uint32_t) RC[2].periodo * PWM_spalla;
+	  goRC(&RC[2]);
+	  RC[3].delta = (uint32_t) RC[3].periodo * PWM_mano;
+	  goRC(&RC[3]);
+	  RC[4].delta = (uint32_t) RC[4].periodo * PWM_polso;
+	  goRC(&RC[4]);
+	  RC[5].delta = (uint32_t) RC[5].periodo * PWM_pinza;
+	  goRC(&RC[5]);
+
+	  statoJ1_precedente = JY1_SW;
+	  statoJ2_precedente = JY2_SW;
+
 }
 
-
-///
 /// imposta i motori in posizione centrale
 /// il braccio e' verticale
 void setup(){
@@ -95,4 +162,5 @@ void setup(){
 	  for (int i = 0; i < 6; i++)
 	  	 //! le strutture dati sono impostate e i PWM vengono avviati
 	  	 goRC(&RC[i]);
+
 }

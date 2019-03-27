@@ -172,37 +172,37 @@ void goRC(servoRC * RCptr){
 	switch(RCptr->motore){
 			case base:
 				delta = RCptr->delta;
-				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.130);
 			break;
 
 			case gomito:
 				delta = RCptr->delta;
-				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.127);
 			break;
 
 			case spalla:
 				delta = RCptr->delta;
-				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.110);
 			break;
 
 			case mano:
 				delta = RCptr->delta;
-				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.128);
 			break;
 
 			case polso:
 				delta = RCptr->delta;
-				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.1245);
 			break;
 
 			case pinza:
 				delta = RCptr->delta;
-				inf = (int) (periodo * 0.040);	///fuori standard servo RC
+				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.073);
 			break;
 
