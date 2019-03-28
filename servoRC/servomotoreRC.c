@@ -196,8 +196,8 @@ void goRC(servoRC * RCptr){
 
 			case polso:
 				delta = RCptr->delta;
-				inf = (int) (periodo * 0.040);
-				sup = (int) (periodo * 0.1245);
+				inf = (int) (periodo * 0.050);
+				sup = (int) (periodo * 0.1145);
 			break;
 
 			case pinza:

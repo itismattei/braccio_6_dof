@@ -204,18 +204,24 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
- printf("Sblocca il dispositivo premendo il tasto blu!\n");
- while(HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin) == GPIO_PIN_RESET);
+ printf("Sblocca il dispositivo premendo il tasto rosso!\n");
+ while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == GPIO_PIN_RESET); //sblocco con pulsante rosso
 
  printf("Sbloccato.\nAttendo i messaggi da seriale!\n");
 
+// while(1){
+//	int a;
+//	a = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);
+//	if (a == 1 )
+//		break;
+// }
  /// settaggio
  setup();
 
  while (1){
 	 /// simile ad Arduino
  /* USER CODE END WHILE */
-	  HAL_ADC_Start_DMA(&hadc3, buffer, 6);
+	  HAL_ADC_Start_DMA(&hadc3, buffer, 5);
   /* USER CODE BEGIN 3 */
   //HAL_Delay (1000);
 	  loop();
@@ -242,7 +248,8 @@ static void MX_ADC3_Init(void)
   hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc3.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc3.Init.NbrOfConversion = 6;
+  //hadc3.Init.NbrOfConversion = 6;
+  hadc3.Init.NbrOfConversion = 5;
   hadc3.Init.DMAContinuousRequests = ENABLE;
   hadc3.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   if (HAL_ADC_Init(&hadc3) != HAL_OK)
@@ -294,12 +301,12 @@ if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK){
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_8;   /// PF10 -> A5 -> ADC_CH8
-  sConfig.Rank = ADC_REGULAR_RANK_6;
-  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+//  sConfig.Channel = ADC_CHANNEL_8;   /// PF10 -> A5 -> ADC_CH8
+//  sConfig.Rank = ADC_REGULAR_RANK_6;
+//  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+//  {
+//    _Error_Handler(__FILE__, __LINE__);
+//  }
 
 
 
@@ -532,6 +539,22 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PA5  */
+  /// lo uso per un tasto configurato con pull_down
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+
+  /*Configure GPIO pins : PF10  */
+  /// lo uso per un tasto configurato con pull_down
+  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
   /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
   GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
@@ -597,7 +620,7 @@ void assert_failed(uint8_t* file, uint32_t line)
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	ADupdate = true;
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 5; i++)
 	{
 	   adc[i] = buffer[i];  // store the values in adc[]
 	}
