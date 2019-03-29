@@ -12,7 +12,7 @@
 extern volatile uint32_t TICK, MS100, S1;
 extern servoRC RC[];
 extern uint32_t buffer[];
-extern bool ADupdate;
+extern bool ADupdate, ADInProgress;
 extern ADC_HandleTypeDef hadc3;
 #define		TIC500		50
 
@@ -54,10 +54,12 @@ void loop(void){
 	  }
 
 	  // verifica se occorre aggiornare le letture dei convertitori
-	  if (ADupdate == false)
+	  if (ADupdate == false && ADInProgress == false){
 	  /// aggiorna ogni volta che il dato e' usato, la lettura dei convertitori AD
 	  /// La funzione callback riporta ADupdate a true
-		  HAL_ADC_Start_DMA(&hadc3, buffer, 6);
+		  HAL_ADC_Start_DMA(&hadc3, buffer, 5);
+		  ADInProgress = true;
+	  }
 	  /*for(float i=0; i < 0.140; i=i+0.001){
 		  RC[1].delta = (uint32_t) RC[1].periodo *i;
 		 goRC(&RC[1]);
@@ -70,15 +72,17 @@ void loop(void){
 	  JY2_X = buffer[3]; //mano //gomito
 	  JY2_Y = buffer[4]; //polso //pinza
 	  JY2_SW= buffer[5];
+
+	  /// legge e memorizza a "toggle" il valore di pressione del tasto del joystick
 	  int a = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);
 	  if( button2_old == false && a == GPIO_PIN_RESET ){
 		  button2_old = true;
 		  if( state1 == true ){
 			  state1 = false;
-			  state2 = true;
+			  //state2 = true;
 		  }
 		  else{
-			  state2 = false;
+			  //state2 = false;
 			  state1 =  true;
 		  }
 	  }
@@ -86,8 +90,9 @@ void loop(void){
 		  button2_old = false;
 
 
-	  if( state1 == true){
+	  switch(state1){
 
+	  case true:
 		  if( JY1_X > 3000 && PWM_base < MAX_base )
 		  	 PWM_base = PWM_base + 0.001;
 
@@ -113,9 +118,9 @@ void loop(void){
 			 PWM_mano = PWM_mano + 0.001;
 
 		  HAL_Delay(45);
-		 }
-	  if( state2 == true){
+	  break;
 
+	  case false:
 		  if( JY2_X > 3500 && PWM_pinza < MAX_pinza )
 			 PWM_pinza = PWM_pinza + 0.001;
 
@@ -129,7 +134,12 @@ void loop(void){
 			 PWM_polso = PWM_polso + 0.001;
 
 		  HAL_Delay(30);
+
+	  break;
+
 	  }
+
+	  /// si passano i valori rilevati e calcolati al registro dei rispettivi PWM
 
 	  RC[0].delta = (uint32_t) RC[0].periodo * PWM_base;
 	  goRC(&RC[0]);
@@ -144,7 +154,8 @@ void loop(void){
 	  RC[5].delta = (uint32_t) RC[5].periodo * PWM_pinza;
 	  goRC(&RC[5]);
 
-	  //ADupdate = false;
+	  /// invalida la lettura in modo che possa ripartire un nuovo ciclo AD
+	  ADupdate = false;
 }
 
 /// imposta i motori in posizione centrale
@@ -160,5 +171,8 @@ void setup(){
 	  for (int i = 0; i < 6; i++)
 	  	 //! le strutture dati sono impostate e i PWM vengono avviati
 	  	 goRC(&RC[i]);
+
+	  /// in maniera predefinita il convertitore ad non sta convertendo.
+	  ADInProgress = false;
 
 }

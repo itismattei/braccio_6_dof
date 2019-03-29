@@ -87,7 +87,7 @@ char READ_BUFF[DIMBUFF];
 volatile uint8_t WPTR = 0, RPTR = 0;
 uint32_t adc[6], buffer[6], temperature;  // define variables
 float vsense = 3.3/1023;
-bool ADupdate = false;
+bool ADupdate = false, ADInProgress;
 
 /* USER CODE END PV */
 
@@ -620,6 +620,7 @@ void assert_failed(uint8_t* file, uint32_t line)
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	ADupdate = true;
+	ADInProgress = false;
 	for (int i = 0; i < 5; i++)
 	{
 	   adc[i] = buffer[i];  // store the values in adc[]
