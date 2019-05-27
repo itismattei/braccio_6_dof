@@ -206,8 +206,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
  printf("Sblocca il dispositivo premendo il tasto rosso!\n");
  while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5) == GPIO_PIN_RESET); //sblocco con pulsante rosso
-
- printf("Sbloccato.\nAttendo i messaggi da seriale!\n");
+ 	 printf("Sbloccato.\nAttendo i messaggi da seriale!\n");
 
 // while(1){
 //	int a;
@@ -224,6 +223,9 @@ int main(void)
 	  HAL_ADC_Start_DMA(&hadc3, buffer, 5);
   /* USER CODE BEGIN 3 */
   //HAL_Delay (1000);
+//	  GPIO_PinState STATO;
+//	  while (1)
+//		  STATO = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_12);
 	  loop();
   }
   /* USER CODE END 3 */
@@ -546,6 +548,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PF12  */
+  /// lo uso per un tasto configurato con pull_down
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
 
   /*Configure GPIO pins : PF10  */
