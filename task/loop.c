@@ -52,181 +52,303 @@ volatile bool state3 = false;
 volatile bool button3 = false;
 volatile bool button3_old = true;
 
+volatile bool programmation;
+
 void loop(void){
 
-	  if (TICK >= TIC500){
-		  ///lampeggio ogni 500 ms.
-		  HAL_GPIO_TogglePin(GPIOB, LD1_Pin|LD2_Pin|LD3_Pin);
-		  TICK = 0;
-	  }
+	if (TICK >= TIC500){
+	///lampeggio ogni 500 ms.
+	HAL_GPIO_TogglePin(GPIOB, LD1_Pin|LD2_Pin|LD3_Pin);
+	TICK = 0;
+	}
 
-	  // verifica se occorre aggiornare le letture dei convertitori
-	  if (ADupdate == false)
-	  /// aggiorna ogni volta che il dato e' usato, la lettura dei convertitori AD
-	  /// La funzione callback riporta ADupdate a true
-		  HAL_ADC_Start_DMA(&hadc3, buffer, 6);
-	  /*for(float i=0; i < 0.140; i=i+0.001){
-		  RC[1].delta = (uint32_t) RC[1].periodo *i;
-		 goRC(&RC[1]);
-		 HAL_Delay(1000);
-		 printf("%d\n", RC[1].delta);
-	  }*/
+	// verifica se occorre aggiornare le letture dei convertitori
+	if (ADupdate == false)
+	/// aggiorna ogni volta che il dato e' usato, la lettura dei convertitori AD
+	/// La funzione callback riporta ADupdate a true
+	HAL_ADC_Start_DMA(&hadc3, buffer, 6);
+	/*for(float i=0; i < 0.140; i=i+0.001){
+	RC[1].delta = (uint32_t) RC[1].periodo *i;
+	goRC(&RC[1]);
+	HAL_Delay(1000);
+	printf("%d\n", RC[1].delta);
+	}*/
 
-	  JY1_X = buffer[0]; //base
-	  JY1_Y = buffer[1]; //spalla
-	  JY1_SW= buffer[2];
-	  JY2_X = buffer[3]; //mano //gomito
-	  JY2_Y = buffer[4]; //polso //pinza
-	  JY2_SW= buffer[5];
+	if(programmation == false){
 
-	  int a = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);
-	  if( button2_old == false && a == GPIO_PIN_RESET ){
-		  button2_old = true;
-		  if( state1 == true ){
-			  state1 = false;
-			  state2 = true;
-			  state3 = false;
-		  }
-		  else{
-			  state2 = false;
-			  state1 = true;
-			  state3 = false;
-		  }
-	  }
-	  else
-		  button2_old = false;
+		JY1_X = buffer[0]; //base
+		JY1_Y = buffer[1]; //spalla
+		JY1_SW= buffer[2];
+		JY2_X = buffer[3]; //mano //gomito
+		JY2_Y = buffer[4]; //polso //pinza
+		JY2_SW= buffer[5];
 
-	  button3_old = button3;
-	  button3 = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_12);
-	  if(button3 == true && button3_old == false){
-			 state3 = true;
-			 state2 = false;
-			 state1 = false;
-	  }
+		int a = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);
+		if( button2_old == false && a == GPIO_PIN_RESET ){
+			button2_old = true;
+			if( state1 == true ){
+				state1 = false;
+				state2 = true;
+			}
+			else{
+				state2 = false;
+				state1 = true;
+			}
+		}
+		else
+			button2_old = false;
 
-	  if( state1 == true){
+		button3_old = button3;
+		button3 = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_12);
+		if(button3 == true && button3_old == false){
+			if(state3 == true){
+				state3 = false;
+				programmation = false;
+			}
+			else if(state3 == false){
+				state3 = true;
+				programmation = true;
+			}
+		}
 
-		  if( JY1_X > 3000 && PWM_base < MAX_base )
-		  	 PWM_base = PWM_base + 0.001;
+		if( state1 == true){
+			if( JY1_X > 3000 && PWM_base < MAX_base )
+				PWM_base = PWM_base + 0.001;
+			if( JY1_X < 1500 && PWM_base > min )
+				PWM_base = PWM_base - 0.001;
+			if( JY1_Y > 3000 && PWM_spalla > min )
+				PWM_spalla = PWM_spalla - 0.001;
+			if( JY1_Y < 1500 && PWM_spalla < MAX_spalla )
+				PWM_spalla = PWM_spalla + 0.001;
+			if( JY2_X > 3500 && PWM_gomito < MAX_gomito )
+				PWM_gomito = PWM_gomito + 0.001;
+			if( JY2_X < 1500 && PWM_gomito > min )
+				PWM_gomito = PWM_gomito - 0.001;
+			if( JY2_Y > 3500 && PWM_mano > min )
+				PWM_mano = PWM_mano - 0.001;
+			if( JY2_Y < 1500 && PWM_mano < MAX_mano )
+				PWM_mano = PWM_mano + 0.001;
 
-		  if( JY1_X < 1500 && PWM_base > min )
-		  	 PWM_base = PWM_base - 0.001;
+			pos[mem][0] = PWM_base;
+			pos[mem][1] = PWM_gomito;
+			pos[mem][2] = PWM_spalla;
+			pos[mem][3] = PWM_mano;
 
-		  if( JY1_Y > 3000 && PWM_spalla > min )
-			 PWM_spalla = PWM_spalla - 0.001;
+			HAL_Delay(45);
 
-		  if( JY1_Y < 1500 && PWM_spalla < MAX_spalla )
-			 PWM_spalla = PWM_spalla + 0.001;
+		}
+		else if( state2 == true){
 
-		  if( JY2_X > 3500 && PWM_gomito < MAX_gomito )
-			 PWM_gomito = PWM_gomito + 0.001;
+			if( JY2_X > 3500 && PWM_pinza < MAX_pinza )
+				PWM_pinza = PWM_pinza + 0.001;
+			if( JY2_X < 1500 && PWM_pinza > min )
+				PWM_pinza = PWM_pinza - 0.001;
+			if( JY2_Y > 3500 && PWM_polso > min )
+				PWM_polso = PWM_polso - 0.001;
+			if( JY2_Y < 1500 && PWM_polso < MAX_polso )
+				PWM_polso = PWM_polso + 0.001;
 
-		  if( JY2_X < 1500 && PWM_gomito > min )
-			 PWM_gomito = PWM_gomito - 0.001;
+			pos[mem][4] = PWM_pinza;
+			pos[mem][5] = PWM_polso;
 
-		  if( JY2_Y > 3500 && PWM_mano > min )
-			 PWM_mano = PWM_mano - 0.001;
+			HAL_Delay(30);
+		}
+		if( state3 == false ){
+			RC[0].delta = (uint32_t) RC[0].periodo * PWM_base;
+			goRC(&RC[0]);
+			RC[1].delta = (uint32_t) RC[1].periodo * PWM_spalla;
+			goRC(&RC[1]);
+			RC[2].delta = (uint32_t) RC[2].periodo * PWM_gomito;
+			goRC(&RC[2]);
+			RC[3].delta = (uint32_t) RC[3].periodo * PWM_mano;
+			goRC(&RC[3]);
+			RC[4].delta = (uint32_t) RC[4].periodo * PWM_polso;
+			goRC(&RC[4]);
+			RC[5].delta = (uint32_t) RC[5].periodo * PWM_pinza;
+			goRC(&RC[5]);
 
-		  if( JY2_Y < 1500 && PWM_mano < MAX_mano )
-			 PWM_mano = PWM_mano + 0.001;
+			if(mem >= 200){
+				state3 = true;
+				state1 = false;
+				state2 = false;
+			}
 
-		  pos[mem][0] = PWM_base;
-		  pos[mem][1] = PWM_gomito;
-		  pos[mem][2] = PWM_spalla;
-		  pos[mem][3] = PWM_mano;
-
-		  HAL_Delay(45);
-
-	  }
-	  else if( state2 == true){
-
-		  if( JY2_X > 3500 && PWM_pinza < MAX_pinza )
-			 PWM_pinza = PWM_pinza + 0.001;
-
-		  if( JY2_X < 1500 && PWM_pinza > min )
-			 PWM_pinza = PWM_pinza - 0.001;
-
-		  if( JY2_Y > 3500 && PWM_polso > min )
-			 PWM_polso = PWM_polso - 0.001;
-
-		  if( JY2_Y < 1500 && PWM_polso < MAX_polso )
-			 PWM_polso = PWM_polso + 0.001;
+			else
+				mem = mem + 1;
+		}
+	}
 
 
-		  pos[mem][4] = PWM_pinza;
-		  pos[mem][5] = PWM_polso;
+	else if(programmation == true){
+		for(int d = 0; d <= mem -1; d++){
+			RC[0].delta = (uint32_t) RC[0].periodo * pos[d][0];
+			goRC(&RC[0]);
+			RC[1].delta = (uint32_t) RC[1].periodo * pos[d][2];
+			goRC(&RC[1]);
+			RC[2].delta = (uint32_t) RC[2].periodo * pos[d][1];
+			goRC(&RC[2]);
+			RC[3].delta = (uint32_t) RC[3].periodo * pos[d][3];
+			goRC(&RC[3]);
+			RC[4].delta = (uint32_t) RC[4].periodo * pos[d][4];
+			goRC(&RC[4]);
+			RC[5].delta = (uint32_t) RC[5].periodo * pos[d][5];
+			goRC(&RC[5]);
 
-		  HAL_Delay(30);
-	  }
-	  else if( state3 == true){
-		  for(int k = mem - 1 ; k>=0; k--){
-			  RC[0].delta = (uint32_t) RC[0].periodo * pos[k][0];
-			  goRC(&RC[0]);
-			  RC[1].delta = (uint32_t) RC[1].periodo * pos[k][2];
-			  goRC(&RC[1]);
-			  RC[2].delta = (uint32_t) RC[2].periodo * pos[k][1];
-			  goRC(&RC[2]);
-			  RC[3].delta = (uint32_t) RC[3].periodo * pos[k][3];
-			  goRC(&RC[3]);
-			  RC[4].delta = (uint32_t) RC[4].periodo * pos[k][4];
-			  goRC(&RC[4]);
-			  RC[5].delta = (uint32_t) RC[5].periodo * pos[k][5];
-			  goRC(&RC[5]);
+			HAL_Delay(45);
+		}
+		state3 = false;
+		state1 = true;
+		mem = 0;
 
-			  HAL_Delay(45);
-		  }
+		for(int i = 0; i<200; i++){
+			for(int k=0; k<6; k++){
+				if(pos[i][k] != 0)
+					pos[i][k] =  pos[i][k] - 0.001;
+			}
+			HAL_Delay(45);
+		}
+	}
 
-		  for(int d = 0; d <= mem; d++){
-			  RC[0].delta = (uint32_t) RC[0].periodo * pos[d][0];
-			  goRC(&RC[0]);
-			  RC[1].delta = (uint32_t) RC[1].periodo * pos[d][2];
-			  goRC(&RC[1]);
-			  RC[2].delta = (uint32_t) RC[2].periodo * pos[d][1];
-			  goRC(&RC[2]);
-			  RC[3].delta = (uint32_t) RC[3].periodo * pos[d][3];
-			  goRC(&RC[3]);
-			  RC[4].delta = (uint32_t) RC[4].periodo * pos[d][4];
-			  goRC(&RC[4]);
-			  RC[5].delta = (uint32_t) RC[5].periodo * pos[d][5];
-			  goRC(&RC[5]);
-
-			  HAL_Delay(45);
-		  }
-		 state3 = false;
-		 state1 = true;
-		 mem = 0;
-
-		 for(int i = 0; i<200; i++){
-			 for(int k=0; k<6; k++){
-				 if(pos[i][k] != 0)
-					 pos[i][k] =  pos[i][k] - 0.001;
-			 }
-			 HAL_Delay(45);
-		 }
-	  }
-	  RC[0].delta = (uint32_t) RC[0].periodo * PWM_base;
-	  goRC(&RC[0]);
-	  RC[1].delta = (uint32_t) RC[1].periodo * PWM_spalla;
-	  goRC(&RC[1]);
-	  RC[2].delta = (uint32_t) RC[2].periodo * PWM_gomito;
-	  goRC(&RC[2]);
-	  RC[3].delta = (uint32_t) RC[3].periodo * PWM_mano;
-	  goRC(&RC[3]);
-	  RC[4].delta = (uint32_t) RC[4].periodo * PWM_polso;
-	  goRC(&RC[4]);
-	  RC[5].delta = (uint32_t) RC[5].periodo * PWM_pinza;
-	  goRC(&RC[5]);
-
-	  if(mem >= 200){
-		  state3 = true;
-		  state1 = false;
-		  state2 = false;
-	  }
-
-	  else
-	   mem = mem + 1;
-  //ADupdate = false;
 }
+
+////	  JY1_X = buffer[0]; //base
+////	  JY1_Y = buffer[1]; //spalla
+////	  JY1_SW= buffer[2];
+////	  JY2_X = buffer[3]; //mano //gomito
+////	  JY2_Y = buffer[4]; //polso //pinza
+////	  JY2_SW= buffer[5];
+//
+////	  int a = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);
+////	  if( button2_old == false && a == GPIO_PIN_RESET ){
+////		  button2_old = true;
+////		  if( state1 == true ){
+////			  state1 = false;
+////			  state2 = true;
+////			  state3 = false;
+////		  }
+////		  else{
+////			  state2 = false;
+////			  state1 = true;
+////			  state3 = false;
+////		  }
+////	  }
+////	  else
+////		  button2_old = false;
+////
+////	  button3_old = button3;
+////	  button3 = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_12);
+////	  if(button3 == true && button3_old == false){
+////			 state3 = true;
+////			 state2 = false;
+////			 state1 = false;
+////	  }
+//
+////	  if( state1 == true){
+////
+////		  if( JY1_X > 3000 && PWM_base < MAX_base )
+////		  	 PWM_base = PWM_base + 0.001;
+////
+////		  if( JY1_X < 1500 && PWM_base > min )
+////		  	 PWM_base = PWM_base - 0.001;
+////
+////		  if( JY1_Y > 3000 && PWM_spalla > min )
+////			 PWM_spalla = PWM_spalla - 0.001;
+////
+////		  if( JY1_Y < 1500 && PWM_spalla < MAX_spalla )
+////			 PWM_spalla = PWM_spalla + 0.001;
+////
+////		  if( JY2_X > 3500 && PWM_gomito < MAX_gomito )
+////			 PWM_gomito = PWM_gomito + 0.001;
+////
+////		  if( JY2_X < 1500 && PWM_gomito > min )
+////			 PWM_gomito = PWM_gomito - 0.001;
+////
+////		  if( JY2_Y > 3500 && PWM_mano > min )
+////			 PWM_mano = PWM_mano - 0.001;
+////
+////		  if( JY2_Y < 1500 && PWM_mano < MAX_mano )
+////			 PWM_mano = PWM_mano + 0.001;
+////
+////		  pos[mem][0] = PWM_base;
+////		  pos[mem][1] = PWM_gomito;
+////		  pos[mem][2] = PWM_spalla;
+////		  pos[mem][3] = PWM_mano;
+////
+////		  HAL_Delay(45);
+////
+////	  }
+////	  else if( state2 == true){
+////
+////		  if( JY2_X > 3500 && PWM_pinza < MAX_pinza )
+////			 PWM_pinza = PWM_pinza + 0.001;
+////
+////		  if( JY2_X < 1500 && PWM_pinza > min )
+////			 PWM_pinza = PWM_pinza - 0.001;
+////
+////		  if( JY2_Y > 3500 && PWM_polso > min )
+////			 PWM_polso = PWM_polso - 0.001;
+////
+////		  if( JY2_Y < 1500 && PWM_polso < MAX_polso )
+////			 PWM_polso = PWM_polso + 0.001;
+////
+////
+////		  pos[mem][4] = PWM_pinza;
+////		  pos[mem][5] = PWM_polso;
+////
+////		  HAL_Delay(30);
+////	  }
+//	  else if( state3 == true){
+//
+////		  for(int d = 0; d <= mem -1; d++){
+////			  RC[0].delta = (uint32_t) RC[0].periodo * pos[d][0];
+////			  goRC(&RC[0]);
+////			  RC[1].delta = (uint32_t) RC[1].periodo * pos[d][2];
+////			  goRC(&RC[1]);
+////			  RC[2].delta = (uint32_t) RC[2].periodo * pos[d][1];
+////			  goRC(&RC[2]);
+////			  RC[3].delta = (uint32_t) RC[3].periodo * pos[d][3];
+////			  goRC(&RC[3]);
+////			  RC[4].delta = (uint32_t) RC[4].periodo * pos[d][4];
+////			  goRC(&RC[4]);
+////			  RC[5].delta = (uint32_t) RC[5].periodo * pos[d][5];
+////			  goRC(&RC[5]);
+////
+////			  HAL_Delay(45);
+////		 }
+////		 state3 = false;
+////		 state1 = true;
+////		 mem = 0;
+////
+////		 for(int i = 0; i<200; i++){
+////			 for(int k=0; k<6; k++){
+////				 if(pos[i][k] != 0)
+////					 pos[i][k] =  pos[i][k] - 0.001;
+////			 }
+////			 HAL_Delay(45);
+////		 }
+//	  }
+////	  RC[0].delta = (uint32_t) RC[0].periodo * PWM_base;
+////	  goRC(&RC[0]);
+////	  RC[1].delta = (uint32_t) RC[1].periodo * PWM_spalla;
+////	  goRC(&RC[1]);
+////	  RC[2].delta = (uint32_t) RC[2].periodo * PWM_gomito;
+////	  goRC(&RC[2]);
+////	  RC[3].delta = (uint32_t) RC[3].periodo * PWM_mano;
+////	  goRC(&RC[3]);
+////	  RC[4].delta = (uint32_t) RC[4].periodo * PWM_polso;
+////	  goRC(&RC[4]);
+////	  RC[5].delta = (uint32_t) RC[5].periodo * PWM_pinza;
+////	  goRC(&RC[5]);
+////
+////	  if(mem >= 200){
+//		  state3 = true;
+//		  state1 = false;
+//		  state2 = false;
+//	  }
+//
+//	  else
+//	   mem = mem + 1;
+//    ADupdate = false;
 
 /// imposta i motori in posizione centrale
 /// il braccio e' verticale
