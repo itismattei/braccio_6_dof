@@ -74,7 +74,7 @@ void loop(void){
 	printf("%d\n", RC[1].delta);
 	}*/
 
-	if(programmation == false){
+	while(programmation == false){
 
 		JY1_X = buffer[0]; //base
 		JY1_Y = buffer[1]; //spalla
@@ -82,6 +82,17 @@ void loop(void){
 		JY2_X = buffer[3]; //mano //gomito
 		JY2_Y = buffer[4]; //polso //pinza
 		JY2_SW= buffer[5];
+
+
+
+		if(mem >= 200){
+			state3 = true;
+			state1 = false;
+			state2 = false;
+		}
+
+		else
+			mem = mem + 1;
 
 		int a = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);
 		if( button2_old == false && a == GPIO_PIN_RESET ){
@@ -103,11 +114,16 @@ void loop(void){
 		if(button3 == true && button3_old == false){
 			if(state3 == true){
 				state3 = false;
+				state2 = false;
+				state1 = true;
 				programmation = false;
 			}
 			else if(state3 == false){
 				state3 = true;
+				state2 = false;
+				state1 = false;
 				programmation = true;
+				break;
 			}
 		}
 
@@ -153,33 +169,40 @@ void loop(void){
 
 			HAL_Delay(30);
 		}
-		if( state3 == false ){
-			RC[0].delta = (uint32_t) RC[0].periodo * PWM_base;
-			goRC(&RC[0]);
-			RC[1].delta = (uint32_t) RC[1].periodo * PWM_spalla;
-			goRC(&RC[1]);
-			RC[2].delta = (uint32_t) RC[2].periodo * PWM_gomito;
-			goRC(&RC[2]);
-			RC[3].delta = (uint32_t) RC[3].periodo * PWM_mano;
-			goRC(&RC[3]);
-			RC[4].delta = (uint32_t) RC[4].periodo * PWM_polso;
-			goRC(&RC[4]);
-			RC[5].delta = (uint32_t) RC[5].periodo * PWM_pinza;
-			goRC(&RC[5]);
 
-			if(mem >= 200){
-				state3 = true;
-				state1 = false;
-				state2 = false;
-			}
-
-			else
-				mem = mem + 1;
-		}
+		RC[0].delta = (uint32_t) RC[0].periodo * PWM_base;
+		goRC(&RC[0]);
+		RC[1].delta = (uint32_t) RC[1].periodo * PWM_spalla;
+		goRC(&RC[1]);
+		RC[2].delta = (uint32_t) RC[2].periodo * PWM_gomito;
+		goRC(&RC[2]);
+		RC[3].delta = (uint32_t) RC[3].periodo * PWM_mano;
+		goRC(&RC[3]);
+		RC[4].delta = (uint32_t) RC[4].periodo * PWM_polso;
+		goRC(&RC[4]);
+		RC[5].delta = (uint32_t) RC[5].periodo * PWM_pinza;
+		goRC(&RC[5]);
 	}
 
 
-	else if(programmation == true){
+	if(programmation == true){
+		for(int d = mem-1; d >= 0; d++){
+			RC[0].delta = (uint32_t) RC[0].periodo * pos[d][0];
+			goRC(&RC[0]);
+			RC[1].delta = (uint32_t) RC[1].periodo * pos[d][2];
+			goRC(&RC[1]);
+			RC[2].delta = (uint32_t) RC[2].periodo * pos[d][1];
+			goRC(&RC[2]);
+			RC[3].delta = (uint32_t) RC[3].periodo * pos[d][3];
+			goRC(&RC[3]);
+			RC[4].delta = (uint32_t) RC[4].periodo * pos[d][4];
+			goRC(&RC[4]);
+			RC[5].delta = (uint32_t) RC[5].periodo * pos[d][5];
+			goRC(&RC[5]);
+
+			HAL_Delay(45);
+		}
+
 		for(int d = 0; d <= mem -1; d++){
 			RC[0].delta = (uint32_t) RC[0].periodo * pos[d][0];
 			goRC(&RC[0]);
@@ -197,16 +220,37 @@ void loop(void){
 			HAL_Delay(45);
 		}
 		state3 = false;
+		programmation = false;
 		state1 = true;
 		mem = 0;
 
-		for(int i = 0; i<200; i++){
+		for(int j = 0; j<200; j++){
 			for(int k=0; k<6; k++){
-				if(pos[i][k] != 0)
-					pos[i][k] =  pos[i][k] - 0.001;
+				if(pos[j][k] != 0){
+					pos[j][k] =  pos[j][k] - 0.001;
+				}
+				RC[0].delta = (uint32_t) RC[0].periodo * pos[j][k];
+				goRC(&RC[0]);
+				RC[1].delta = (uint32_t) RC[1].periodo * pos[j][k];
+				goRC(&RC[1]);
+				RC[2].delta = (uint32_t) RC[2].periodo * pos[j][k];
+				goRC(&RC[2]);
+				RC[3].delta = (uint32_t) RC[3].periodo * pos[j][k];
+				goRC(&RC[3]);
+				RC[4].delta = (uint32_t) RC[4].periodo * pos[j][k];
+				goRC(&RC[4]);
+				RC[5].delta = (uint32_t) RC[5].periodo * pos[j][k];
+				goRC(&RC[5]);
+				HAL_Delay(45);
 			}
+		}
+
+		for(int j = 0; j<200; j++){
+			for(int k=0; k<6; k++)
+					pos[j][k] = ' ';
 			HAL_Delay(45);
 		}
+
 	}
 
 }
