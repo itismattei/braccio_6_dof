@@ -509,7 +509,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
 
-  /// Configura il pin PA7 che e' D12 E SERVE ad abilitare la potenza per i servo RC
+  /// Configura il pin PA6 che e' D12 E SERVE ad abilitare la potenza per i servo RC
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin|LD2_Pin, GPIO_PIN_SET);
