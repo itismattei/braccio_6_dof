@@ -6,7 +6,7 @@
   ******************************************************************************
   **Il programma permette di controllare un braccio robotico a 6 gradi
   * di liberta' tramite joystick, di memorizzare e ripetere spostamenti, di colloquiare con
-  * l'unità centrale e muovere il braccio su proprio comando.
+  * l'unitï¿½ centrale e muovere il braccio su proprio comando.
   *
   * Esso usa 6 PWM tipologia RC per controllare i servomotori di spostamento,
   * sui pin compatibili Arduino D9, D10, D11 (rispettivamente PD15, PD14, PA7, posti sul canale 4 e 3 PWM
@@ -23,12 +23,12 @@
   * PF5 	-> ADC3_IN15
   * PF10 	-> ADC3_IN8
   *
-  * Il TICK è stabilito a 10ms e generato da TIMER5.
+  * Il TICK ï¿½ stabilito a 10ms e generato da TIMER5.
   *
   * Sono previste due UART, la n.3 comunicante con PC tramite interfaccia USB presente in ST.LINK
-  * la seconda, n.4 tramite pin RX e TX (PA1 e PA0 rispettivamente) e la terza tramite
-  * i pin RX e TX (rispettivamente PG9 e PG14) che corrispondono ai pin RX e TX della piedinatura di
-  * Arduino.
+  * la seconda, n.4 tramite pin RX e TX (PA1 e PA0 rispettivamente del connettore CN11) e la terza
+  * tramite i pin RX e TX (rispettivamente PG9 e PG14) che corrispondono ai pin RX e TX della
+  * piedinatura di Arduino.
   *
   *
   * 12/02/19: test dei 6 canali PWM con periodo a 20ms. Possono essere usati per comandare i serviRC
@@ -58,6 +58,8 @@
 #include <stdbool.h>
 #include <servomotoreRC.h>
 
+
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -83,7 +85,7 @@ UART_HandleTypeDef huart6;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 #define  DIMBUFF  		64
-char READ_BUFF[DIMBUFF];
+uint8_t READ_BUFF[DIMBUFF];
 volatile uint8_t WPTR = 0, RPTR = 0;
 uint32_t adc[6], buffer[6], temperature;  // define variables
 float vsense = 3.3/1023;
@@ -91,6 +93,7 @@ bool ADupdate = false, ADInProgress;
 
 /* USER CODE END PV */
 
+extern "C" {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
@@ -114,6 +117,7 @@ static void MX_TIM5_Init(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void loop(void);
 void setup(void);
+}
                                 
 ///vettore che raccoglie le informazioni sui delta e numero dei servi RC
 /// la dimensione e' 6 ed e' definito in servomotoreRC.c
@@ -137,6 +141,8 @@ extern char versione[];
   *
   * @retval None
   */
+
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -224,7 +230,8 @@ int main(void)
 	  HAL_ADC_Start_DMA(&hadc3, buffer, 5);
   /* USER CODE BEGIN 3 */
   //HAL_Delay (1000);
-	  loop();
+
+
   }
   /* USER CODE END 3 */
 
