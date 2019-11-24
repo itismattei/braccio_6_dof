@@ -57,6 +57,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <servomotoreRC.h>
+#include "RCsm.h"
 
 
 
@@ -115,9 +116,10 @@ static void MX_USART6_UART_Init(void);
 static void MX_TIM5_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-void loop(void);
-void setup(void);
 }
+
+void loop(void);
+void setup();
                                 
 ///vettore che raccoglie le informazioni sui delta e numero dei servi RC
 /// la dimensione e' 6 ed e' definito in servomotoreRC.c
@@ -146,7 +148,7 @@ extern char versione[];
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  RCsm RC1[6];
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -189,9 +191,24 @@ int main(void)
 
   /// INIZIALIZZAZIONI STRUTTURE DATI SERVI RC
   /// I PWM SONO ANCORA SPENTI
-  //  inizializza i 6 motori servoRC posizionando il braccio circai n posizione vertivcale, cioe'
+  //  inizializza i 6 motori servoRC posizionando il braccio circa in posizione vertivcale, cioe'
   //  a meta' della cinematica dello snodo
- initRC(RC);
+ //initRC(RC);
+ /// corrisponde al quarto connettore (M4) della scheda arancione
+ RC1[3].initRC(&htim1, 1,mano);
+ /// corrisponde al quinto connettore (M5) della scheda arancione
+ RC1[4].initRC(&htim1, 2, polso);
+ /// corrisponde al sesto connettore (M6) della scheda arancione
+ RC1[5].initRC(&htim1, 3, pinza);
+ // inizializza il motore posto su  TIM3  CH2 ( PA7)
+ /// corrisponde al primo connettore (M1) della scheda arancione
+ RC1[0].initRC(&htim3, 2, base);
+ // inizializza i motori posti su TIM4 CH3 e CH4 (PD14 e PD15)
+ /// corrisponde al secondo connettore (M2) della scheda arancione
+ RC1[1].initRC(&htim4, 3, gomito);
+ /// corrisponde al terzo connettore (M3) della scheda arancione
+ RC1[2].initRC(&htim4, 4, spalla);
+
  printf("\n\nInizializzati i servi\n");
  printf("PWM spenti \n");
  //! Due lampeggi dei tre led
@@ -205,7 +222,8 @@ int main(void)
  printf("Accendo i PWM e posiziono i motori al centro!\n");
  for (int i = 0; i < 6; i++)
 	 //! le strutture dati sono impostate e i PWM vengono avviati
-	 goRC(&RC[i]);
+	 //goRC(&RC[i]);
+	 RC1[i].go();
  ////HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 
   /* Infinite loop */
@@ -230,7 +248,7 @@ int main(void)
 	  HAL_ADC_Start_DMA(&hadc3, buffer, 5);
   /* USER CODE BEGIN 3 */
   //HAL_Delay (1000);
-
+	  loop();
 
   }
   /* USER CODE END 3 */

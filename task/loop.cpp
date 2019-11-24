@@ -8,6 +8,7 @@
 #include "stm32f7xx_hal.h"
 #include <stdbool.h>
 #include "servomotoreRC.h"
+#include "RCsm.h"
 
 extern volatile uint32_t TICK, MS100, S1;
 extern servoRC RC[];
@@ -161,16 +162,16 @@ void loop(void){
 /// imposta i motori in posizione centrale
 /// il braccio e' verticale
 void setup(){
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
-	  RC[0].delta = (uint32_t) RC[0].periodo *0.075;
-	  RC[1].delta = (uint32_t) RC[1].periodo *0.075;
-	  RC[2].delta = (uint32_t) RC[2].periodo *0.075;
-	  RC[3].delta = (uint32_t) RC[3].periodo *0.075;
-	  RC[4].delta = (uint32_t) RC[4].periodo *0.075;
-	  RC[5].delta = (uint32_t) RC[5].periodo *0.075;
-	  for (int i = 0; i < 6; i++)
-	  	 //! le strutture dati sono impostate e i PWM vengono avviati
-	  	 goRC(&RC[i]);
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+//	  RC[0].delta = (uint32_t) RC[0].periodo *0.075;
+//	  RC[1].delta = (uint32_t) RC[1].periodo *0.075;
+//	  RC[2].delta = (uint32_t) RC[2].periodo *0.075;
+//	  RC[3].delta = (uint32_t) RC[3].periodo *0.075;
+//	  RC[4].delta = (uint32_t) RC[4].periodo *0.075;
+//	  RC[5].delta = (uint32_t) RC[5].periodo *0.075;
+//	  for (int i = 0; i < 6; i++)
+//	  	 //! le strutture dati sono impostate e i PWM vengono avviati
+//	  	 RC[i].go();
 
 	  /// in maniera predefinita il convertitore ad non sta convertendo.
 	  ADInProgress = false;

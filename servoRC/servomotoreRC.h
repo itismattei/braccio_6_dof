@@ -28,12 +28,12 @@
 //	static int numMot;
 //};
 typedef enum{
-	base,
-	spalla,
-	gomito,
-	mano,
-	polso,
-	pinza
+	_base,
+	_spalla,
+	_gomito,
+	_mano,
+	_polso,
+	_pinza
 } tipoMotore;
 
 typedef struct _servoRc{

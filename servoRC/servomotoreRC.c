@@ -106,7 +106,7 @@ void setRC(servoRC * RCptr, TIM_HandleTypeDef *datiPWM, int numCH, tipoMotore *t
 	RCptr->periodo = perPWM;
 	//! spegne i PWM
 	//! i PWM vengono impostati ma al momento vengono spenti,
-	//! poiché i registri a seguire sono quelli che impostano il delta
+	//! poichï¿½ i registri a seguire sono quelli che impostano il delta
 	switch(numCH){
 	case 1:
 		RCptr->TIM_PWM->Instance->CCR1 = 0; //
@@ -142,15 +142,15 @@ extern TIM_HandleTypeDef htim4;
   * @retval void
   */
 void initRC(servoRC * RCptr){
-	  setRC(&RC[3], &htim1, 1, mano);  /// corrisponde al quarto connettore (M4) della scheda arancione
-	  setRC(&RC[4], &htim1, 2, polso);  /// corrisponde al quinto connettore (M5) della scheda arancione
-	  setRC(&RC[5], &htim1, 3, pinza);  /// corrisponde al sesto connettore (M6) della scheda arancione
+	  setRC(&RC[3], &htim1, 1, _mano);  /// corrisponde al quarto connettore (M4) della scheda arancione
+	  setRC(&RC[4], &htim1, 2, _polso);  /// corrisponde al quinto connettore (M5) della scheda arancione
+	  setRC(&RC[5], &htim1, 3, _pinza);  /// corrisponde al sesto connettore (M6) della scheda arancione
 	  // inizializza il motore posto su  TIM3  CH2 ( PA7)
 	  //setRC(&RC[3], &htim3, 1);
-	  setRC(&RC[0], &htim3, 2, base);  /// corrisponde al primo connettore (M1) della scheda arancione
+	  setRC(&RC[0], &htim3, 2, _base);  /// corrisponde al primo connettore (M1) della scheda arancione
 	  // inizializza i motori posti su TIM4 CH3 e CH4 (PD14 e PD15)
-	  setRC(&RC[1], &htim4, 3, gomito);  /// corrisponde al secondo connettore (M2) della scheda arancione
-	  setRC(&RC[2], &htim4, 4, spalla);  /// corrisponde al terzo connettore (M3) della scheda arancione
+	  setRC(&RC[1], &htim4, 3, _gomito);  /// corrisponde al secondo connettore (M2) della scheda arancione
+	  setRC(&RC[2], &htim4, 4, _spalla);  /// corrisponde al terzo connettore (M3) della scheda arancione
 }
 
 /**
@@ -170,37 +170,37 @@ void goRC(servoRC * RCptr){
 	uint32_t periodo = RCptr->periodo;
 	int inf, sup, delta;
 	switch(RCptr->motore){
-			case base:
+			case _base:
 				delta = RCptr->delta;
 				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.130);
 			break;
 
-			case gomito:
+			case _gomito:
 				delta = RCptr->delta;
 				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.127);
 			break;
 
-			case spalla:
+			case _spalla:
 				delta = RCptr->delta;
 				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.110);
 			break;
 
-			case mano:
+			case _mano:
 				delta = RCptr->delta;
 				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.128);
 			break;
 
-			case polso:
+			case _polso:
 				delta = RCptr->delta;
 				inf = (int) (periodo * 0.050);
 				sup = (int) (periodo * 0.1145);
 			break;
 
-			case pinza:
+			case _pinza:
 				delta = RCptr->delta;
 				inf = (int) (periodo * 0.040);
 				sup = (int) (periodo * 0.073);
