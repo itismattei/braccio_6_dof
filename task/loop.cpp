@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include "servomotoreRC.h"
 #include "RCsm.h"
+#include <vector>
 
 extern volatile uint32_t TICK, MS100, S1;
 extern servoRC RC[];
@@ -45,9 +46,11 @@ volatile float MAX_polso = 0.1245;
 volatile float MAX_mano = 0.128;
 volatile float MAX_pinza = 0.073;
 
+//volatile float pos[200][6];
 
+//std::vector< std::vector<float> > V[200][6];
 
-void loop(void){
+void loop(std::vector< std::vector<float> > V){
 
 	  if (TICK >= TIC500){
 		  ///lampeggio ogni 500 ms.

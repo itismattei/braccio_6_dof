@@ -58,7 +58,9 @@
 #include <stdbool.h>
 #include <servomotoreRC.h>
 #include "RCsm.h"
+#include <vector>
 
+using namespace std;
 
 
 /* USER CODE BEGIN Includes */
@@ -118,7 +120,7 @@ static void MX_TIM5_Init(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 }
 
-void loop(void);
+void loop(std::vector< std::vector<float> >);
 void setup(RCsm *);
                                 
 ///vettore che raccoglie le informazioni sui delta e numero dei servi RC
@@ -149,6 +151,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
   RCsm RC1[6];
+  vector<vector<float> > V(200 , vector<float> (6, 0));
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -246,11 +249,11 @@ int main(void)
  while (1){
 	 /// simile ad Arduino
  /* USER CODE END WHILE */
-	  HAL_ADC_Start_DMA(&hadc3, buffer, 5);
+	 HAL_ADC_Start_DMA(&hadc3, buffer, 5);
   /* USER CODE BEGIN 3 */
   //HAL_Delay (1000);
-	  loop();
-
+	 loop(V);
+	  //vector<vector<int> > vec( n , vector<int> (m, 0));V[1][0] = 0.0f;
   }
   /* USER CODE END 3 */
 
