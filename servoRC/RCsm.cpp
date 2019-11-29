@@ -164,8 +164,8 @@ int RCsm::go(void){
 
 }
 
-
 int RCsm::assignMotor(){
 
+	return 0;
 
 }

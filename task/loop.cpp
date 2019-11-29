@@ -46,6 +46,7 @@ volatile float MAX_mano = 0.128;
 volatile float MAX_pinza = 0.073;
 
 
+
 void loop(void){
 
 	  if (TICK >= TIC500){
@@ -161,19 +162,22 @@ void loop(void){
 
 /// imposta i motori in posizione centrale
 /// il braccio e' verticale
-void setup(){
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
-//	  RC[0].delta = (uint32_t) RC[0].periodo *0.075;
-//	  RC[1].delta = (uint32_t) RC[1].periodo *0.075;
-//	  RC[2].delta = (uint32_t) RC[2].periodo *0.075;
-//	  RC[3].delta = (uint32_t) RC[3].periodo *0.075;
-//	  RC[4].delta = (uint32_t) RC[4].periodo *0.075;
-//	  RC[5].delta = (uint32_t) RC[5].periodo *0.075;
-//	  for (int i = 0; i < 6; i++)
-//	  	 //! le strutture dati sono impostate e i PWM vengono avviati
-//	  	 RC[i].go();
+void setup(RCsm * RC1){
+	//imposta il pin PA6 che e' D12 E SERVE ad abilitare la potenza per i servo RC
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+	for (int i = 0; i < 6; i++)
+		RC1[i].setPWM(0.075);
+//	RC1[0].delta = (uint32_t) RC1[0].periodo *0.075;
+//	RC1[1].delta = (uint32_t) RC1[1].periodo *0.075;
+//	RC1[2].delta = (uint32_t) RC1[2].periodo *0.075;
+//	RC1[3].delta = (uint32_t) RC1[3].periodo *0.075;
+//	RC1[4].delta = (uint32_t) RC1[4].periodo *0.075;
+//	RC1[5].delta = (uint32_t) RC1[5].periodo *0.075;
+	for (int i = 0; i < 6; i++)
+	 //! le strutture dati sono impostate e i PWM vengono avviati
+	 RC1[i].go();
 
-	  /// in maniera predefinita il convertitore ad non sta convertendo.
-	  ADInProgress = false;
+	/// in maniera predefinita il convertitore ad non sta convertendo.
+	ADInProgress = false;
 
 }

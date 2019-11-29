@@ -119,7 +119,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 }
 
 void loop(void);
-void setup();
+void setup(RCsm *);
                                 
 ///vettore che raccoglie le informazioni sui delta e numero dei servi RC
 /// la dimensione e' 6 ed e' definito in servomotoreRC.c
@@ -194,6 +194,7 @@ int main(void)
   //  inizializza i 6 motori servoRC posizionando il braccio circa in posizione vertivcale, cioe'
   //  a meta' della cinematica dello snodo
  //initRC(RC);
+  setup(RC1);
  /// corrisponde al quarto connettore (M4) della scheda arancione
  RC1[3].initRC(&htim1, 1,mano);
  /// corrisponde al quinto connettore (M5) della scheda arancione
@@ -240,7 +241,7 @@ int main(void)
 //		break;
 // }
  /// settaggio
- setup();
+ setup(RC1);
 
  while (1){
 	 /// simile ad Arduino

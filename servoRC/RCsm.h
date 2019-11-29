@@ -31,38 +31,6 @@ typedef enum{
   braccio. Una variabile statica indica il numero di servi che sono attualemente gestiti.
 */
 
-
-
-    //! A normal member taking two arguments and returning an integer value.
-    /*!
-      \param a an integer argument.
-      \param s a constant character pointer.
-      \return The test results
-      \sa QTstyle_Test(), ~QTstyle_Test(), testMeToo() and publicVar()
-    */
-    int testMe(int a,const char *s);
-
-    //! A pure virtual member.
-    /*!
-      \sa testMe()
-      \param c1 the first argument.
-      \param c2 the second argument.
-    */
-    virtual void testMeToo(char c1,char c2) = 0;
-
-    //! A public variable.
-    /*!
-      Details.
-    */
-    int publicVar;
-
-    //! A function variable.
-    /*!
-      Details.
-    */
-    int (*handler)(int a,int b);
-};
-
 class RCsm {
 public:
     //! A constructor.
@@ -87,21 +55,31 @@ public:
 	*/
 	int initRC(TIM_HandleTypeDef *datiPWM, int numCH, tipoMotore1 tipo);
 
+	//! Metodo setPWM: imposta il delta del PWM
+	/*!
+	  \param valore del PWM in percentuale. Il valore e' compreso tra 5% e 10%
+	  \return codice di errore
+	*/
+	inline int setPWM(float d) {delta = (uint32_t) periodo * d; return RC_OK;}
+
 	//! Metodo go(): trasferisce il valore del delta all'interno del registro della CPU
 	/*!
 	  \param nessuno
 	  \return codice di errore
 	*/
-	int go();
+	int go(void);
 
 
 public:
 	uint16_t 			numCHRc;		///< contiene il numero del canale del motore
 	uint16_t 			delta;			///< contiene il valore attuale del PWM
+										///< per questi motori va dal 5% al 10%
+										///< del valore del periodo
 	TIM_HandleTypeDef 	*TIM_PWM;		///< contiene l'indirizzo della struttura che ha i parametri del PWM
-	uint32_t			periodo;		///< periodo del PWM
-	tipoMotore1			motore;
-	static uint8_t		numPWM;
+	uint32_t			periodo;		///< periodo del PWM di valore pari a 20ms
+										///< che in questo caso vale 2000
+	tipoMotore1			motore;			///< indica di quale motore si tratta
+	static uint8_t		numPWM;			///< variabile statica che indica il numero di motori registrati
 };
 
 #endif /* RCSM_H_ */
