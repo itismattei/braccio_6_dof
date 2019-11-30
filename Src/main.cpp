@@ -120,7 +120,7 @@ static void MX_TIM5_Init(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 }
 
-void loop(std::vector< std::vector<float> >);
+void loop(std::vector< std::vector<float> >, RCsm *);
 void setup(RCsm *);
                                 
 ///vettore che raccoglie le informazioni sui delta e numero dei servi RC
@@ -252,7 +252,7 @@ int main(void)
 	 HAL_ADC_Start_DMA(&hadc3, buffer, 5);
   /* USER CODE BEGIN 3 */
   //HAL_Delay (1000);
-	 loop(V);
+	 loop(V,RC1);
 	  //vector<vector<int> > vec( n , vector<int> (m, 0));V[1][0] = 0.0f;
   }
   /* USER CODE END 3 */
