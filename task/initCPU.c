@@ -5,10 +5,11 @@
  *      Author: massimo
  */
 
+/// aggiornta la release a joyManage con l'uso del C++
 
 #include "stm32f7xx_hal.h"
 
-char versione[] = "rev. 1.0.0\n";
+char versione[] = "rev. 1.1.0\n";
 
 void CPU_CACHE_Enable(void){
   /* Enable I-Cache */

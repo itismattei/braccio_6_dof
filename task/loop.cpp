@@ -5,6 +5,8 @@
  *      Author: massimo
  */
 
+
+
 #include "stm32f7xx_hal.h"
 #include <stdbool.h>
 #include "servomotoreRC.h"
