@@ -209,9 +209,9 @@ int main(void)
  RC1[0].initRC(&htim3, 2, base);
  // inizializza i motori posti su TIM4 CH3 e CH4 (PD14 e PD15)
  /// corrisponde al secondo connettore (M2) della scheda arancione
- RC1[1].initRC(&htim4, 3, gomito);
+ RC1[1].initRC(&htim4, 3, spalla);
  /// corrisponde al terzo connettore (M3) della scheda arancione
- RC1[2].initRC(&htim4, 4, spalla);
+ RC1[2].initRC(&htim4, 4, gomito);
 
  printf("\n\nInizializzati i servi\n");
  printf("PWM spenti \n");
@@ -586,7 +586,7 @@ static void MX_GPIO_Init(void)
 
 
   /*Configure GPIO pins : PF10  */
-  /// lo uso per un tasto configurato con pull_down
+  /// lo uso per un tasto configurato con pull_up
   GPIO_InitStruct.Pin = GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;

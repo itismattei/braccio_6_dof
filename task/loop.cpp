@@ -18,6 +18,18 @@ extern bool ADupdate, ADInProgress;
 extern ADC_HandleTypeDef hadc3;
 #define		TIC500		50
 
+enum{
+	S0_B,	/// stato iniziale
+	S1_B,
+	S2_P,
+	S3_P,
+	S4_M,
+	S5_M,
+	S6_MP,
+	S7_MP,
+	S8		/// esegue il programma
+};
+
 volatile int JY1_X;
 volatile int JY1_Y;
 volatile int JY1_SW;
@@ -57,8 +69,14 @@ volatile bool execution = false;
 volatile bool exit_old;
 volatile bool exit_new;
 
+void moveArm(int JY1_X, int JY1_Y, int JY2_X, int JY2_Y, RCsm *RC);
+
 void loop(std::vector< std::vector<float> > V, RCsm *RC){
 
+	static uint16_t STATO = S0_B;
+	uint16_t PF10, PF12;
+	PF10 = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);
+	PF12 = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_12);
 
 	if (TICK >= TIC500){
 	  ///lampeggio ogni 500 ms.
@@ -79,7 +97,46 @@ void loop(std::vector< std::vector<float> > V, RCsm *RC){
 	 HAL_Delay(1000);
 	 printf("%d\n", RC[1].delta);
 	}*/
+	switch(STATO){
+	case S0_B:
+		if(PF10 && PF12)
+			/// stato di ripetizione del programma
+			STATO = S8;
+		else
+			if (PF10 && !PF12)
+				/// muove ancora il braccio e si prepara a commutare su polso
+				STATO = S1_B;
+			else
+				STATO = S0_B;
+		/// azione
+		moveArm(buffer[0]/*JY1_X*/, buffer[1]/*JY1_Y*/,
+				buffer[3]/*JY2_X*/, buffer[4]/*JY2_Y*/, RC);
+	break;
 
+	case S1_B:
+		if(PF10 && PF12)
+			/// stato di ripetizione del programma
+			STATO = S8;
+		else
+			if(!PF10)
+				/// commuta su polso
+				STATO = S2_P;
+			else
+				STATO = S1_B;
+	break;
+
+	case S2_P:
+		if(PF10 && PF12)
+			/// stato di ripetizione del programma
+			STATO = S8;
+		else
+			if(PF10 && !PF12)
+				/// mouve ancora il polso ma si prepara a commutare su braccio
+				STATO = S3_P;
+			else
+				STATO = S2_P;
+	break;
+	}
 	if(execution == false){
 		JY1_X = buffer[0]; //base
 		JY1_Y = buffer[1]; //spalla
@@ -88,7 +145,7 @@ void loop(std::vector< std::vector<float> > V, RCsm *RC){
 		JY2_Y = buffer[4]; //polso //pinza
 		JY2_SW= buffer[5];
 
-		/// verificare se e' stato impostato nella inizializzazione della GPIOF
+
 		int a = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);
 		/// legge e memorizza a "toggle" il valore di pressione del tasto del joystick
 		if( button2_old == false && a == GPIO_PIN_RESET ){
@@ -167,27 +224,33 @@ void loop(std::vector< std::vector<float> > V, RCsm *RC){
 		}
 
 		//RC[0].delta = (uint32_t) RC[0].periodo * PWM_base;
-		RC[0].setPWM(PWM_base);
-		RC[0].go();
+		//RC[0].setPWM(PWM_base);
+		RC[0].setPWM().go();
+		//RC[0].go();
 		//RC[1].delta = (uint32_t) RC[1].periodo * PWM_spalla;
-		RC[0].setPWM(PWM_spalla);
-		RC[0].go();
+		//RC[1].setPWM(PWM_spalla);
+		RC[1].setPWM().go();
+		//RC[1].go();
 
 		//RC[2].delta = (uint32_t) RC[2].periodo * PWM_gomito;
-		RC[0].setPWM(PWM_gomito);
-		RC[0].go();
+//		RC[2].setPWM(PWM_gomito);
+//		RC[2].go();
+		RC[2].setPWM().go();
 
 		//RC[3].delta = (uint32_t) RC[3].periodo * PWM_mano;
-		RC[0].setPWM(PWM_mano);
-		RC[0].go();
+//		RC[3].setPWM(PWM_mano);
+//		RC[3].go();
+		RC[3].setPWM().go();
 
 		//RC[4].delta = (uint32_t) RC[4].periodo * PWM_polso;
-		RC[0].setPWM(PWM_polso);
-		RC[0].go();
+//		RC[4].setPWM(PWM_polso);
+//		RC[4].go();
+		RC[4].setPWM().go();
 
 		//RC[5].delta = (uint32_t) RC[5].periodo * PWM_pinza;
-		RC[0].setPWM(PWM_pinza);
-		RC[0].go();
+//		RC[5].setPWM(PWM_pinza);
+//		RC[5].go();
+		RC[5].setPWM().go();
 
 
 
@@ -284,4 +347,33 @@ void setup(RCsm * RC1){
 	/// in maniera predefinita il convertitore ad non sta convertendo.
 	ADInProgress = false;
 
+}
+
+void moveWrist(int JY2_X, int JY2_Y){
+	//JY2_X = buffer[3]; //mano //gomito
+	//JY2_Y = buffer[4]; //polso //pinza
+}
+
+void moveArm(int JY1_X, int JY1_Y, int JY2_X, int JY2_Y, RCsm *RC){
+	//JY1_X = buffer[0]; //base
+	//JY1_Y = buffer[1]; //spalla
+
+	//JY2_X = buffer[3]; //mano //gomito
+	//JY2_Y = buffer[4]; //polso //pinza
+	if( JY1_X > 3000 && RC[0].pwm < RC[0].MAX)
+		RC[0].pwm += 0.001;
+	if( JY1_X < 1500 && RC[0].pwm > RC[0].MIN)
+		RC[0].pwm -= 0.001;
+	if( JY1_Y > 3000 && RC[1].pwm > RC[1].MIN)
+		RC[1].pwm -= 0.001;
+	if( JY1_Y < 1500 && RC[1].pwm < RC[1].MAX)
+		RC[1].pwm += 0.001;;
+	if( JY2_X > 3500 && RC[2].pwm < RC[2].MAX)
+		RC[2].pwm += 0.001;
+	if( JY2_X < 1500 && RC[2].pwm > RC[2].MIN)
+		RC[2].pwm -= 0.001;
+	if( JY2_Y > 3500 && RC[3].pwm > RC[3].MIN)
+		RC[3].pwm -= 0.001;
+	if( JY2_Y < 1500 && RC[3].pwm < RC[3].MAX)
+		RC[3].pwm += 0.001;
 }

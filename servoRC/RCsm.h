@@ -15,6 +15,16 @@
 #define		NO_TIM		-1
 #define		RANGE_PWM	-2
 
+const float taraturaMAxPWM[6]{
+	/*volatile float MAX_base = */	0.130,
+	/*volatile float MAX_spalla =*/ 0.110,
+	/*volatile float MAX_gomito =*/ 0.127,
+	/*volatile float MAX_polso = */	0.1245,
+	/*volatile float MAX_mano = */	0.128,
+	/*volatile float MAX_pinza = */	0.073
+};
+
+
 typedef enum{
 	base,
 	spalla,
@@ -60,7 +70,8 @@ public:
 	  \param valore del PWM in percentuale. Il valore e' compreso tra 5% e 10%
 	  \return codice di errore
 	*/
-	inline int setPWM(float d) {delta = (uint32_t) periodo * d; return RC_OK;}
+	inline int setPWM(float d) {delta = (uint32_t) periodo * d; pwm = d; return RC_OK;}
+	RCsm& setPWM(void){ delta = (uint32_t) periodo * pwm; return *this; }
 
 	//! Metodo go(): trasferisce il valore del delta all'interno del registro della CPU
 	/*!
@@ -75,6 +86,9 @@ public:
 	uint16_t 			delta;			///< contiene il valore attuale del PWM
 										///< per questi motori va dal 5% al 10%
 										///< del valore del periodo
+	float				pwm;			///< contiene il valore decimale del PWM
+	float				MAX;			///< valore massimo ammesso dopo la taratura
+	float				MIN;			///< valore minimo dopo la taratura
 	TIM_HandleTypeDef 	*TIM_PWM;		///< contiene l'indirizzo della struttura che ha i parametri del PWM
 	uint32_t			periodo;		///< periodo del PWM di valore pari a 20ms
 										///< che in questo caso vale 2000

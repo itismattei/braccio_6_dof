@@ -13,6 +13,8 @@ RCsm::RCsm() {
 	delta	=	0;			/// contiene il valore attuale del PWM
 	TIM_PWM =	NULL;		/// contiene l'indirizzo della struttura che ha i parametri del PWM
 	periodo	=	0;
+	MIN		=   0.04;
+	pwm		= 	0.075;
 	motore	= 	base;
 
 }
@@ -73,7 +75,8 @@ int RCsm::initRC(TIM_HandleTypeDef *datiPWM, int numCH, tipoMotore1 tipo){
 	}
 	//! inoltre viene dato lo start al pwm in modo che alla prossima scrittura in CCRx
 	//! si avra' l'avvio dei servi
-
+	motore = tipo;		///< tipo motore o articolazione
+	MAX = taraturaMAxPWM[numPWM];	///< lookup table che contiene valori preimpostati del max PWM
 	/// infine aggiorna il numero dei motori gia' impostati
 	numPWM++;
 	return RC_OK;
