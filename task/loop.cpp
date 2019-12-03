@@ -74,6 +74,8 @@ void moveArm(int JY1_X, int JY1_Y, int JY2_X, int JY2_Y, RCsm *RC);
 void loop(std::vector< std::vector<float> > V, RCsm *RC){
 
 	static uint16_t STATO = S0_B;
+	static uint16_t preprog = 0;
+	static bool MEM = false;
 	uint16_t PF10, PF12;
 	PF10 = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);
 	PF12 = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_12);
@@ -102,12 +104,17 @@ void loop(std::vector< std::vector<float> > V, RCsm *RC){
 		if(PF10 && PF12)
 			/// stato di ripetizione del programma
 			STATO = S8;
-		else
-			if (PF10 && !PF12)
-				/// muove ancora il braccio e si prepara a commutare su polso
-				STATO = S1_B;
+		else{
+			if (!PF10 && PF12)
+				/// voglio attivare/disattivare la programmazione
+				preprog = 1;
 			else
-				STATO = S0_B;
+				if (PF10 && !PF12)
+					/// muove ancora il braccio e si prepara a commutare su polso
+					STATO = S1_B;
+				else
+					STATO = S0_B;
+		}
 		/// azione
 		moveArm(buffer[0]/*JY1_X*/, buffer[1]/*JY1_Y*/,
 				buffer[3]/*JY2_X*/, buffer[4]/*JY2_Y*/, RC);
@@ -117,26 +124,63 @@ void loop(std::vector< std::vector<float> > V, RCsm *RC){
 		if(PF10 && PF12)
 			/// stato di ripetizione del programma
 			STATO = S8;
-		else
-			if(!PF10)
-				/// commuta su polso
-				STATO = S2_P;
+		else{
+			if (!PF10 && PF12)
+				/// voglio attivare/disattivare la programmazione
+				preprog = 1;
 			else
-				STATO = S1_B;
+				if(!PF10)
+					/// commuta su polso
+					STATO = S2_P;
+				else
+					STATO = S1_B;
+		}
 	break;
 
 	case S2_P:
 		if(PF10 && PF12)
 			/// stato di ripetizione del programma
 			STATO = S8;
-		else
-			if(PF10 && !PF12)
-				/// mouve ancora il polso ma si prepara a commutare su braccio
-				STATO = S3_P;
+		else{
+			if (!PF10 && PF12)
+				/// voglio attivare/disattivare la programmazione
+				preprog = 1;
 			else
-				STATO = S2_P;
+				if(PF10 && !PF12)
+					/// mouve ancora il polso ma si prepara a commutare su braccio
+					STATO = S3_P;
+				else
+					STATO = S2_P;
+		}
+	break;
+
+	case S3_P:
+		if(PF10 && PF12)
+			/// stato di ripetizione del programma
+			STATO = S8;
+		else{
+			if(!PF10 && PF12)
+				/// voglio attivare/disattivare la programmazione
+				preprog = 1;
+			else
+				if(!PF10)
+					/// commuta su braccio
+					STATO = S0_B;
+				else
+					STATO = S3_P;
+		}
 	break;
 	}
+
+	/// occorre verificare se e' stata richiesta la memorizzazione del percorso
+	/// e se e' stato rilasciato il tasto PF12
+	if (preprog == 1 && !PF12){
+		/// e' stata richiesta la programmazione e rilasciato PF12
+		/// significa che occorre avviare la programmazione
+		preprog = 0;
+		MEM = !MEM;
+	}
+
 	if(execution == false){
 		JY1_X = buffer[0]; //base
 		JY1_Y = buffer[1]; //spalla
