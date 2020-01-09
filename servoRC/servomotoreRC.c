@@ -149,8 +149,8 @@ void initRC(servoRC * RCptr){
 	  //setRC(&RC[3], &htim3, 1);
 	  setRC(&RC[0], &htim3, 2, base);  /// corrisponde al primo connettore (M1) della scheda arancione
 	  // inizializza i motori posti su TIM4 CH3 e CH4 (PD14 e PD15)
-	  setRC(&RC[1], &htim4, 3, gomito);  /// corrisponde al secondo connettore (M2) della scheda arancione
-	  setRC(&RC[2], &htim4, 4, spalla);  /// corrisponde al terzo connettore (M3) della scheda arancione
+	  setRC(&RC[1], &htim4, 3, spalla);  /// corrisponde al secondo connettore (M2) della scheda arancione
+	  setRC(&RC[2], &htim4, 4, gomito);  /// corrisponde al terzo connettore (M3) della scheda arancione
 }
 
 /**

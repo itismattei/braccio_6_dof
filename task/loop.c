@@ -8,6 +8,8 @@
 #include "stm32f7xx_hal.h"
 #include <stdbool.h>
 #include "servomotoreRC.h"
+#include <stdio.h>
+#include <inttypes.h>
 
 extern volatile uint32_t TICK, MS100, S1;
 extern servoRC RC[];
@@ -57,6 +59,8 @@ volatile bool execution = false;
 volatile bool exit_old;
 volatile bool exit_new;
 
+int first_run = true;
+
 void loop(void){
 
 	if (TICK >= TIC500){
@@ -81,42 +85,58 @@ void loop(void){
 
 		JY1_X = buffer[0]; //base
 		JY1_Y = buffer[1]; //spalla
-		JY1_SW= buffer[2];
+		JY1_SW= buffer[2]; //joystick sinistro
 		JY2_X = buffer[3]; //mano //gomito
 		JY2_Y = buffer[4]; //polso //pinza
-		JY2_SW= buffer[5];
+		JY2_SW= buffer[5]; //joystick destro
 
-		int a = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);
-		if( button2_old == false && a == GPIO_PIN_RESET ){
+		/* Metodo vecchio di lettura del pulsante
+	 	int a = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10); //viene letto JY1_SW
+		if( button2_old == false && a == GPIO_PIN_RESET ){ //JY1_SW è stato premuto?
 			button2_old = true;
-			if( state1 == true ){
-				state1 = false;
-				state2 = true;
+			if( state1 == true ){ //si, si entra nello stato di movimento della pinza
+				state1 = false; //esce dallo stato 1
+				state2 = true; //entra nello stato 2
 			}
-			else{
-				state2 = false;
-				state1 = true;
+			else{ //no, rimane nello stato di movimento dei primi quattro motori
+				state2 = false; //non entra nello stato 2
+				state1 = true; //rimane nello stato 1
 			}
 		}
 		else
-			button2_old = false;
+			button2_old = false;*/
+
+		int a = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10);            //viene letto JY1_SW
+		if( button2_old == false && a == true ){      //JY1_SW è stato premuto?
+			if( state1 == true ){							   //si, si entra nello stato di movimento della pinza
+				state1 = false;                               //esce dallo stato 1
+				state2 = true;                               //entra nello stato 2
+			}
+			else{                                          //no, rimane nello stato di movimento dei primi quattro motori
+				state2 = false;                           //non entra nello stato 2
+				state1 = true;                           //rimane nello stato 1
+			}
+		}
+		button2_old = a;
+
 
 		button3_old = button3;
-		button3 = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_12);
-		if(button3 == true && button3_old == false){
-			if(programmation == true){
-				programmation = false;
-				execution = true;
+		button3 = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_12);     //Viene letto il pulsante 3
+		if(button3 == true && button3_old == false){       //È stato premuto il pulsante 3?
+			if(programmation == true){					  //Siamo nella fase di programmazione?
+				programmation = false;                   //Si, esci dalla fase di programmazione
+				execution = true;						//Si, entra in quella di esecuzione
 			}
-			else if(programmation == false){
-				programmation = true;
-				execution = false;
+			else if(execution == true){            //No, ma siamo nella fase di esecuzione?
+				programmation = true;             //Si, entra nella fase di programmazione
+				execution = false;               //Si, esci dalla fase di programmazione
 			}
 		}
 
-		if( state1 == true){
-			if( JY1_X > 3000 && PWM_base < MAX_base )
+		if( state1 == true){                                    //Siamo nella fase 1?
+			if( JY1_X > 3000 && PWM_base < MAX_base )           //Se
 				PWM_base = PWM_base + 0.001;
+			//printf("%d" PRIu32 "\n", PWM_base);
 			if( JY1_X < 1500 && PWM_base > min )
 				PWM_base = PWM_base - 0.001;
 			if( JY1_Y > 3000 && PWM_spalla > min )
@@ -132,18 +152,11 @@ void loop(void){
 			if( JY2_Y < 1500 && PWM_mano < MAX_mano )
 				PWM_mano = PWM_mano + 0.001;
 
-			if(programmation == true){
-				pos[mem][0] = PWM_base;
-				pos[mem][1] = PWM_gomito;
-				pos[mem][2] = PWM_spalla;
-				pos[mem][3] = PWM_mano;
-			}
-
-			HAL_Delay(45);
+			HAL_Delay(45);    //pausa di 45 ms tra i vari incrementi
 
 		}
-		else if( state2 == true){
-
+		else if( state2 == true){                                //Siamo nello stato 2?
+																//Si
 			if( JY2_X > 3500 && PWM_pinza < MAX_pinza )
 				PWM_pinza = PWM_pinza + 0.001;
 			if( JY2_X < 1500 && PWM_pinza > min )
@@ -153,28 +166,33 @@ void loop(void){
 			if( JY2_Y < 1500 && PWM_polso < MAX_polso )
 				PWM_polso = PWM_polso + 0.001;
 
-			if(programmation == true){
-				pos[mem][4] = PWM_pinza;
-				pos[mem][5] = PWM_polso;
-			}
+			HAL_Delay(30);   //pausa di 30 ms tra i vari incrementi
+		}
 
-			HAL_Delay(30);
+
+		if(programmation == true){       //Siamo nella fase di prgrammazione?
+			pos[mem][0] = PWM_base;      //Si, salva questa posizione del primo motore
+			pos[mem][2] = PWM_gomito;   //Si, salva questa posizione del terzo motore
+			pos[mem][1] = PWM_spalla;  //Si, salva questa posizione del secondo motore
+			pos[mem][3] = PWM_mano;   //Si, salva questa posizione del quarto motore
+			pos[mem][4] = PWM_pinza;    //Si, salva questa posizione del quinto motore
+			pos[mem][5] = PWM_polso;   //Si, salva questa posizione della pinza
 		}
 
 		RC[0].delta = (uint32_t) RC[0].periodo * PWM_base;
-		goRC(&RC[0]);
+		goRC(&RC[0]);                                                //muove la base
 		RC[1].delta = (uint32_t) RC[1].periodo * PWM_spalla;
-		goRC(&RC[1]);
+		goRC(&RC[1]);                                               //muove la spalla
 		RC[2].delta = (uint32_t) RC[2].periodo * PWM_gomito;
-		goRC(&RC[2]);
+		goRC(&RC[2]);                                              //muove il gomito
 		RC[3].delta = (uint32_t) RC[3].periodo * PWM_mano;
-		goRC(&RC[3]);
+		goRC(&RC[3]);                                             //muove la mano
 		RC[4].delta = (uint32_t) RC[4].periodo * PWM_polso;
-		goRC(&RC[4]);
+		goRC(&RC[4]);                                            //muove il polso
 		RC[5].delta = (uint32_t) RC[5].periodo * PWM_pinza;
-		goRC(&RC[5]);
+		goRC(&RC[5]);                                           //muove la pinza
 
-		if(mem >= 200 && programmation == true){
+		if(mem >= 200 && programmation == true){               //abbiamo raggiunto 200 posizioni memorizzate?
 			execution = true;
 			state1 = false;
 			state2 = false;
@@ -185,7 +203,7 @@ void loop(void){
 	}
 
 
-	else if(execution == true){
+	else if(execution == true){                                            //esegue le posizioni memorizzate al contrario
 		for(int d = (mem - 1); d >= 0; d--){
 			RC[0].delta = (uint32_t) RC[0].periodo * pos[d][0];
 			goRC(&RC[0]);
@@ -202,7 +220,7 @@ void loop(void){
 
 			HAL_Delay(30);
 		}
-		for(int d = 0; d <= (mem - 1); d++){
+		for(int d = 0; d <= (mem - 1); d++){                                //esegue le posizioni memorizzate
 			RC[0].delta = (uint32_t) RC[0].periodo * pos[d][0];
 			goRC(&RC[0]);
 			RC[1].delta = (uint32_t) RC[1].periodo * pos[d][2];
@@ -219,12 +237,12 @@ void loop(void){
 			HAL_Delay(30);
 		}
 		exit_old = exit_new;
-		exit_new = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5);
+		exit_new = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5);         //Il pulsante rosso è stato premuto?
 		if(exit_new == true && exit_old == false){
-			execution = false;
-			state1 = true;
-			mem = 0;
-			for(int d = 0; d <= mem -1; d++){
+			execution = false;								   //Esce dalla fase di esecuzione
+			state1 = true;                                    //Entra nello stato 1
+			mem = 0;                                         //Azzera il numero delle posizioni memorizzate
+			for(int d = 0; d <= mem -1; d++){               //Azzera le posizioni memorizzate
 				pos[d][0] = ' ';
 				pos[d][2] = ' ';
 				pos[d][1] = ' ';
@@ -237,12 +255,14 @@ void loop(void){
 }
 void setup(){
 	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+
 	  RC[0].delta = (uint32_t) RC[0].periodo *0.075;
 	  RC[1].delta = (uint32_t) RC[1].periodo *0.075;
 	  RC[2].delta = (uint32_t) RC[2].periodo *0.075;
 	  RC[3].delta = (uint32_t) RC[3].periodo *0.075;
 	  RC[4].delta = (uint32_t) RC[4].periodo *0.075;
 	  RC[5].delta = (uint32_t) RC[5].periodo *0.075;
+
 	  for (int i = 0; i < 6; i++)
 	  	 //! le strutture dati sono impostate e i PWM vengono avviati
 	  	 goRC(&RC[i]);
