@@ -174,7 +174,7 @@ void loop(void){
 			pos[mem][0] = PWM_base;      //Si, salva questa posizione del primo motore
 			pos[mem][2] = PWM_gomito;   //Si, salva questa posizione del terzo motore
 			pos[mem][1] = PWM_spalla;  //Si, salva questa posizione del secondo motore
-			pos[mem][3] = PWM_mano;   //Si, salva questa posizione del quarto motore
+			pos[mem][3] = PWM_mano;   	//Si, salva questa posizione del quarto motore
 			pos[mem][4] = PWM_pinza;    //Si, salva questa posizione del quinto motore
 			pos[mem][5] = PWM_polso;   //Si, salva questa posizione della pinza
 		}
